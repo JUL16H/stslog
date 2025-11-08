@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <memory>
 
 namespace stslog::Sinks
 {
@@ -9,5 +8,6 @@ namespace stslog::Sinks
     {
     public:
         virtual void write(std::string text) = 0;
+        virtual ~Sink() {}
     };
 }
