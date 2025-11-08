@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <ranges>
 #include "Sink.hpp"
 #include "stslog/LogLevel.hpp"
 #include "stslog/Sink.hpp"
@@ -37,6 +38,7 @@ namespace stslog
     private:
         void log(LogLevel _lvl, std::string text)
         {
+            // TODO: 添加额外信息和格式, 支持内容格式化
             if (this->lvl >= _lvl)
                 for (auto s: this->sinks)
                     s->write(text);
@@ -46,4 +48,23 @@ namespace stslog
         LogLevel lvl = LogLevel::INFO;
         std::vector<std::shared_ptr<Sinks::Sink>> sinks;
     };
+
+    inline std::shared_ptr<Logger> make_logger(std::string name, Sinks::Sink* sink)
+    {
+        std::vector<std::shared_ptr<Sinks::Sink>> sinksVec;
+        sinksVec.reserve(1);
+        sinksVec.emplace_back(std::shared_ptr<Sinks::Sink>(sink));
+        auto logger = std::make_shared<Logger>(name, sinksVec);
+        return logger;
+    }
+
+    inline std::shared_ptr<Logger> make_logger(std::string name, std::vector<Sinks::Sink*> sinks)
+    {
+        std::vector<std::shared_ptr<Sinks::Sink>> sinksVec;
+        sinksVec.reserve(sinks.size());
+        std::ranges::transform(sinks, std::back_inserter(sinksVec),
+            [](auto* p){ return std::shared_ptr<Sinks::Sink>(p); });
+        auto logger = std::make_shared<Logger>(name, sinksVec);
+        return logger;
+    }
 }

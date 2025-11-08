@@ -2,8 +2,8 @@
 
 int main()
 {
-    stslog::Logger logger("logger", std::make_shared<stslog::Sinks::StdoutSink>());
-    logger.info("hello world");
+    auto logger = stslog::make_logger("logger", {new stslog::Sinks::StdoutSink(), new stslog::Sinks::StdoutSink});
+    logger->info("hello world");
 
     return 0;
 }
