@@ -1,7 +1,9 @@
 #pragma once
-#include <string>
 
-namespace stslog
+#include <string>
+#include <memory>
+
+namespace stslog::Sinks
 {
     class Sink
     {

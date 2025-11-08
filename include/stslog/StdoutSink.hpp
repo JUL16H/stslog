@@ -1,9 +1,11 @@
-#include "Logger.hpp"
+#pragma once
+
+#include "Sink.hpp"
 #include <iostream>
 
-namespace stslog
+namespace stslog::Sinks
 {
-    class ConsoleSink : public Sink
+    class StdoutSink : public Sink
     {
     public:
         void write(std::string text) override
