@@ -57,23 +57,38 @@ namespace stslog
         std::vector<std::shared_ptr<Sinks::Sink>> sinks;
     };
 
-    inline std::shared_ptr<Logger> make_logger(std::string name, Sinks::Sink* sink)
+    inline std::shared_ptr<Logger> make_logger(std::string name)
     {
-        std::vector<std::shared_ptr<Sinks::Sink>> sinksVec;
-        sinksVec.reserve(1);
-        sinksVec.emplace_back(std::shared_ptr<Sinks::Sink>(sink));
-        auto logger = std::make_shared<Logger>(name, sinksVec);
-        return logger;
+        return std::make_shared<Logger>(name);
     }
 
-    // TODO
-    inline std::shared_ptr<Logger> make_logger(std::string name, std::vector<Sinks::Sink*> sinks)
+    inline std::shared_ptr<Logger> make_logger(std::string name, std::shared_ptr<Sinks::Sink> sink)
     {
-        std::vector<std::shared_ptr<Sinks::Sink>> sinksVec;
-        sinksVec.reserve(sinks.size());
-        std::ranges::transform(sinks, std::back_inserter(sinksVec),
-            [](auto* p){ return std::shared_ptr<Sinks::Sink>(p); });
-        auto logger = std::make_shared<Logger>(name, sinksVec);
-        return logger;
+        std::vector<std::shared_ptr<Sinks::Sink>> sinksVec(1, std::move(sink));
+        return std::make_shared<Logger>(name, sinksVec);
     }
+
+    inline std::shared_ptr<Logger> make_logger(std::string name, std::vector<std::shared_ptr<Sinks::Sink>> sinks)
+    {
+        return std::make_shared<Logger>(name, sinks);
+    }
+
+    // inline std::shared_ptr<Logger> make_logger(std::string name, Sinks::Sink* sink)
+    // {
+    //     std::vector<std::shared_ptr<Sinks::Sink>> sinksVec;
+    //     sinksVec.reserve(1);
+    //     sinksVec.emplace_back(std::shared_ptr<Sinks::Sink>(sink));
+    //     auto logger = std::make_shared<Logger>(name, sinksVec);
+    //     return logger;
+    // }
+
+    // inline std::shared_ptr<Logger> make_logger(std::string name, std::vector<Sinks::Sink*> sinks)
+    // {
+    //     std::vector<std::shared_ptr<Sinks::Sink>> sinksVec;
+    //     sinksVec.reserve(sinks.size());
+    //     std::ranges::transform(sinks, std::back_inserter(sinksVec),
+    //         [](auto* p){ return std::shared_ptr<Sinks::Sink>(p); });
+    //     auto logger = std::make_shared<Logger>(name, sinksVec);
+    //     return logger;
+    // }
 }

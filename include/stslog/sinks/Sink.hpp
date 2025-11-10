@@ -1,13 +1,23 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
-namespace stslog::Sinks
+namespace stslog
 {
-    class Sink
+    namespace Sinks
     {
-    public:
-        virtual void write(std::string text) = 0;
-        virtual ~Sink() {}
-    };
+        class Sink
+        {
+        public:
+            virtual void write(std::string text) = 0;
+            virtual ~Sink() = default;
+        };
+    }
+
+    template <typename SinkType, typename... Args>
+    std::shared_ptr<Sinks::Sink> make_sink(Args&&... args)
+    {
+        return std::make_shared<SinkType>(std::forward<Args>(args)...);
+    }
 }
