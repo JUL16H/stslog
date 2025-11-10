@@ -1,10 +1,13 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <memory>
 
 namespace stslog
 {
+    struct Formatter { virtual std::string content() = 0; };
+
     namespace Sinks
     {
         class Sink
@@ -12,6 +15,9 @@ namespace stslog
         public:
             virtual void write(std::string msg) = 0;
             virtual ~Sink() = default;
+
+        private:
+            // std::vector<>
         };
     }
 
