@@ -10,7 +10,7 @@ namespace stslog
         class Sink
         {
         public:
-            virtual void write(std::string text) = 0;
+            virtual void write(std::string msg) = 0;
             virtual ~Sink() = default;
         };
     }

@@ -8,9 +8,9 @@ namespace stslog::Sinks
     class StdoutSink : public Sink
     {
     public:
-        void write(std::string text) override
+        void write(std::string msg) override
         {
-            std::cout << text << std::endl;
+            std::cout << msg << std::endl;
         }
     };
 }

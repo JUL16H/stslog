@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 #include <memory>
 #include "stslog/sinks/Sink.hpp"
 
@@ -22,21 +23,21 @@ namespace stslog
     {
     public:
         Logger(std::string _name) : name(std::move(_name)) {}
-        Logger(std::string _name, std::shared_ptr<Sinks::Sink> sink) : name(_name)
-         { this->sinks.push_back(sink); }
+        Logger(std::string _name, std::shared_ptr<Sinks::Sink> sink) : name(std::move(_name))
+         { this->sinks.emplace_back(sink); }
         Logger(std::string _name, std::vector<std::shared_ptr<Sinks::Sink>> _sinks)
          : name(std::move(_name)), sinks(std::move(_sinks)) {}
 
         void set_level(LogLevel _lvl) { this->lvl = _lvl; }
 
-        void trace(std::string text) { log(LogLevel::TRACE, text); }
-        void debug(std::string text) { log(LogLevel::DEBUG, text); }
-        void info(std::string text) { log(LogLevel::INFO, text); }
-        void warn(std::string text) { log(LogLevel::WARN, text); }
-        void error(std::string text) { log(LogLevel::ERROR, text); }
-        void critical(std::string text) { log(LogLevel::CRITICAL, text); }
+        void trace(std::string msg) { log(LogLevel::TRACE, msg); }
+        void debug(std::string msg) { log(LogLevel::DEBUG, msg); }
+        void info(std::string msg) { log(LogLevel::INFO, msg); }
+        void warn(std::string msg) { log(LogLevel::WARN, msg); }
+        void error(std::string msg) { log(LogLevel::ERROR, msg); }
+        void critical(std::string msg) { log(LogLevel::CRITICAL, msg); }
 
-        void change_sink(std::shared_ptr<Sinks::Sink> _sink) noexcept
+        void change_sink(std::shared_ptr<Sinks::Sink> _sink)
         {
             this->sinks.clear();
             this->sinks.emplace_back(_sink);
@@ -45,12 +46,12 @@ namespace stslog
          { this->sinks = std::move(_sinks); }
 
     private:
-        void log(LogLevel _lvl, std::string text)
+        void log(LogLevel _lvl, std::string msg)
         {
             // TODO: 添加额外信息和格式, 支持内容格式化
-            if (_lvl >= this->lvl)
-                for (auto s: this->sinks)
-                    s->write(text);
+            if (_lvl < this->lvl) return;
+            for (const auto &s: this->sinks)
+                s->write(msg);
         }
 
         std::string name;
@@ -60,18 +61,17 @@ namespace stslog
 
     inline std::shared_ptr<Logger> make_logger(std::string name)
     {
-        return std::make_shared<Logger>(name);
+        return std::make_shared<Logger>(std::move(name));
     }
 
     inline std::shared_ptr<Logger> make_logger(std::string name, std::shared_ptr<Sinks::Sink> sink)
     {
-        std::vector<std::shared_ptr<Sinks::Sink>> sinksVec(1, std::move(sink));
-        return std::make_shared<Logger>(name, sinksVec);
+        return std::make_shared<Logger>(std::move(name), std::move(sink));
     }
 
     inline std::shared_ptr<Logger> make_logger(std::string name, std::vector<std::shared_ptr<Sinks::Sink>> sinks)
     {
-        return std::make_shared<Logger>(name, sinks);
+        return std::make_shared<Logger>(std::move(name), std::move(sinks));
     }
 
     // inline std::shared_ptr<Logger> make_logger(std::string name, Sinks::Sink* sink)
@@ -79,7 +79,7 @@ namespace stslog
     //     std::vector<std::shared_ptr<Sinks::Sink>> sinksVec;
     //     sinksVec.reserve(1);
     //     sinksVec.emplace_back(std::shared_ptr<Sinks::Sink>(sink));
-    //     auto logger = std::make_shared<Logger>(name, sinksVec);
+    //     auto logger = std::make_shared<Logger>(std::move(name), std::move(sinksVec));
     //     return logger;
     // }
 
@@ -89,7 +89,7 @@ namespace stslog
     //     sinksVec.reserve(sinks.size());
     //     std::ranges::transform(sinks, std::back_inserter(sinksVec),
     //         [](auto* p){ return std::shared_ptr<Sinks::Sink>(p); });
-    //     auto logger = std::make_shared<Logger>(name, sinksVec);
+    //     auto logger = std::make_shared<Logger>(std::move(name), std::move(sinksVec));
     //     return logger;
     // }
 }

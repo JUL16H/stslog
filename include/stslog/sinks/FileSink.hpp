@@ -9,11 +9,11 @@ namespace stslog::Sinks
     {
     public:
         FileSink(std::string _file) : Sink(), file(_file) {}
-        void write(std::string text) override
+        void write(std::string msg) override
         {
             // TODO 异常捕获 缓冲区 线程安全
             std::ofstream fout(file);
-            fout << text << std::endl;
+            fout << msg << std::endl;
         }
 
     private:
