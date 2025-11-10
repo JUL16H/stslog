@@ -4,13 +4,21 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <ranges>
-#include "Sink.hpp"
-#include "stslog/LogLevel.hpp"
-#include "stslog/Sink.hpp"
+#include "stslog/sinks/Sink.hpp"
 
 namespace stslog
 {
+    enum class LogLevel : std::uint8_t
+    {
+        TRACE,
+        DEBUG,
+        INFO,
+        WARN,
+        ERROR,
+        CRITICAL,
+        OFF
+    };
+
     class Logger
     {
     public:
@@ -58,6 +66,7 @@ namespace stslog
         return logger;
     }
 
+    // TODO
     inline std::shared_ptr<Logger> make_logger(std::string name, std::vector<Sinks::Sink*> sinks)
     {
         std::vector<std::shared_ptr<Sinks::Sink>> sinksVec;

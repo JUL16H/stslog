@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Sink.hpp"
+#include "stslog/sinks/Sink.hpp"
 #include <iostream>
 
 namespace stslog::Sinks

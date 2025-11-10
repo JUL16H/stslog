@@ -1,3 +1,1 @@
-#include "Logger.hpp"
-
-#include "StdoutSink.hpp"
+#include "stslog/Logger.hpp"
