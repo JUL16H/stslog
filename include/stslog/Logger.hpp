@@ -1,6 +1,5 @@
 #pragma once
 
-#include <algorithm>
 #include <string>
 #include <vector>
 #include <memory>
@@ -28,6 +27,8 @@ namespace stslog
         Logger(std::string _name, std::vector<std::shared_ptr<Sinks::Sink>> _sinks)
          : name(std::move(_name)), sinks(std::move(_sinks)) {}
 
+        void set_level(LogLevel _lvl) { this->lvl = _lvl; }
+
         void trace(std::string text) { log(LogLevel::TRACE, text); }
         void debug(std::string text) { log(LogLevel::DEBUG, text); }
         void info(std::string text) { log(LogLevel::INFO, text); }
@@ -35,19 +36,19 @@ namespace stslog
         void error(std::string text) { log(LogLevel::ERROR, text); }
         void critical(std::string text) { log(LogLevel::CRITICAL, text); }
 
-        void changeSink(std::shared_ptr<Sinks::Sink> _sink) noexcept
+        void change_sink(std::shared_ptr<Sinks::Sink> _sink) noexcept
         {
             this->sinks.clear();
             this->sinks.emplace_back(_sink);
         }
-        void changeSink(std::vector<std::shared_ptr<Sinks::Sink>> _sinks) noexcept
+        void change_sink(std::vector<std::shared_ptr<Sinks::Sink>> _sinks) noexcept
          { this->sinks = std::move(_sinks); }
 
     private:
         void log(LogLevel _lvl, std::string text)
         {
             // TODO: 添加额外信息和格式, 支持内容格式化
-            if (this->lvl >= _lvl)
+            if (_lvl >= this->lvl)
                 for (auto s: this->sinks)
                     s->write(text);
         }

@@ -11,5 +11,8 @@ int main()
     );
     logger->info("hello world");
 
+    logger->set_level(stslog::LogLevel::OFF);
+    logger->error("Error");
+
     return 0;
 }
