@@ -9,7 +9,7 @@ int main()
             stslog::make_sink<stslog::Sinks::FileSink>("log.log")
         }
     );
-    logger->set_format("[%Y-%m-%d %h:%m:%s] [%l] %v");
+    logger->set_format("[%Y-%m-%d %H:%M:%S] [%l] %v");
     logger->info("hello world");
 
     logger->set_level(stslog::LogLevel::OFF);
