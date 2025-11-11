@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <vector>
 #include <memory>
@@ -79,7 +81,7 @@ namespace stslog
     {
     public:
         Formatter(const char _c) : c(_c) {};
-        std::string content(const LogInfo &info) override
+        std::string content(const LogInfo&) override
         {
             return std::string(1, c);
         }
@@ -177,7 +179,6 @@ namespace stslog
                 format = "[%H:%M:%S] [%l] %v";
 
             this->formatters.clear();
-            this->formatters.reserve(0);
 
             //TODO
             bool f = false;
@@ -205,9 +206,9 @@ namespace stslog
                         this->formatters.push_back(std::make_unique<Formatter<'%', 'v'>>()); break;
                     case '%':
                         this->formatters.push_back(std::make_unique<Formatter<'c'>>('%')); break;
-                    // default:
-                    //     this->formatters.push_back(std::make_unique<Formatter<'c'>>('%'));
-                    //     this->formatters.push_back(std::make_unique<Formatter<'c'>>(c)); break;
+                    default:
+                        this->formatters.push_back(std::make_unique<Formatter<'c'>>('%'));
+                        this->formatters.push_back(std::make_unique<Formatter<'c'>>('?')); break;
                     }
                     f = false;
                 }
@@ -234,15 +235,19 @@ namespace stslog
     private:
         void fillInfo(stslog::LogLevel lvl, std::string msg)
         {
-            auto now = std::chrono::system_clock::now();
-            info.time.year = std::format("{:%Y}", now);
-            info.time.month = std::format("{:%m}", now);
-            info.time.day = std::format("{:%d}", now);
-            info.time.hour = std::format("{:%H}", now);
-            info.time.minute = std::format("{:%M}", now);
-            info.time.sec = std::format("{:%S}", floor<std::chrono::seconds>(now));
+            // TODO: 现在不会更换时区，锁定为格林威治时间
+            const auto now = std::chrono::system_clock::now();
+            const auto tp_s = std::chrono::floor<std::chrono::seconds>(now);
+            const std::chrono::zoned_time zt{std::chrono::current_zone(), tp_s};
+
+            info.time.year = std::format("{:%Y}", zt);
+            info.time.month = std::format("{:%m}", zt);
+            info.time.day = std::format("{:%d}", zt);
+            info.time.hour = std::format("{:%H}", zt);
+            info.time.minute = std::format("{:%M}", zt);
+            info.time.sec = std::format("{:%S}", zt);
             info.lvl = lvl2str(lvl);
-            info.msg = msg;
+            info.msg = std::move(msg);
         };
 
         LogInfo info;

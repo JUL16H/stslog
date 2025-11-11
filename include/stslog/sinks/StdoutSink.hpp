@@ -10,7 +10,7 @@ namespace stslog::Sinks
     public:
         void write(LogLevel lvl, std::string msg) override
         {
-            std::cout << this->formatter.content(lvl, std::move(msg)) << std::endl;
+            std::cout << this->formatter.content(lvl, std::move(msg)) << '\n';
         }
     };
 }

@@ -13,7 +13,7 @@ namespace stslog
     public:
         Logger(std::string _name) : name(std::move(_name)) {}
         Logger(std::string _name, std::shared_ptr<Sinks::Sink> sink) : name(std::move(_name))
-         { this->sinks.emplace_back(sink); }
+         { this->sinks.emplace_back(std::move(sink)); }
         Logger(std::string _name, std::vector<std::shared_ptr<Sinks::Sink>> _sinks)
          : name(std::move(_name)), sinks(std::move(_sinks)) {}
 
