@@ -23,35 +23,73 @@ namespace stslog
         std::string msg;
     };
 
-    struct Formatter { virtual std::string content(const LogInfo &info) = 0; };
+    // struct Formatter { virtual std::string content(const LogInfo &info) = 0; };
 
-    struct Formatter_year : public Formatter
+    // struct Formatter_year : public Formatter
+    // {
+    //     std::string content(const LogInfo &info) override
+    //     {
+    //         return info.time.year;
+    //     }
+    // };
+
+    // struct Formatter_month : public Formatter
+    // {
+    //     std::string content(const LogInfo &info) override
+    //     {
+    //         return info.time.month;
+    //     }
+    // };
+
+    // struct Formatter_str : public Formatter
+    // {
+    // public:
+    //     Formatter_str(std::string _str) : Formatter(), str(_str) {}
+    //     std::string content(const LogInfo &info) override
+    //     {
+    //         return str;
+    //     }
+
+    //     private:
+    //         std::string str;
+    // };
+
+    struct FormatterBase
     {
-        std::string content(const LogInfo &info) override
+        virtual ~FormatterBase() = default;
+        virtual std::string content(const LogInfo &info) = 0;
+    };
+
+    template <char... cs>
+    class Formatter : public FormatterBase
+    {
+        std::string content(const LogInfo &info)
+        {
+            return std::string({cs...});
+        }
+    };
+
+    template <>
+    class Formatter<'c'> : public FormatterBase
+    {
+    public:
+        Formatter(const char _c) : c(_c) {};
+        std::string content(const LogInfo &info)
+        {
+            return std::string(1, c);
+        }
+    private:
+        char c;
+    };
+
+    template <>
+    class Formatter<'%', 'Y'> : public FormatterBase
+    {
+    public:
+        std::string content(const LogInfo &info)
         {
             return info.time.year;
         }
-    };
-
-    struct Formatter_month : public Formatter
-    {
-        std::string content(const LogInfo &info) override
-        {
-            return info.time.month;
-        }
-    };
-
-    struct Formatter_str : public Formatter
-    {
-    public:
-        Formatter_str(std::string _str) : Formatter(), str(_str) {}
-        std::string content(const LogInfo &info) override
-        {
-            return str;
-        }
-
-        private:
-            std::string str;
     };
 }
 
@@ -69,8 +107,8 @@ namespace stslog
             this->formatters.clear();
             this->formatters.reserve(0);
 
-            for (const auto c: format)
-                this->formatters.emplace_back(std::make_unique<Formatter_str>(std::string(1, c)));
+            for (const char c: format)
+                this->formatters.emplace_back(std::make_unique<Formatter<'c'>>(c));
         }
 
         std::string content()
@@ -91,6 +129,6 @@ namespace stslog
         };
 
         LogInfo info;
-        std::vector<std::unique_ptr<Formatter>> formatters;
+        std::vector<std::unique_ptr<FormatterBase>> formatters;
     };
 }

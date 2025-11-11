@@ -1,10 +1,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
 #include <memory>
-#include <chrono>
-#include <format>
 #include "stslog/sinks/Formatter.hpp"
 
 namespace stslog
