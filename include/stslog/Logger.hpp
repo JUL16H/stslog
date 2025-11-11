@@ -2,23 +2,12 @@
 
 #include <string>
 #include <vector>
-#include <cstdint>
 #include <memory>
+#include "stslog/LogLevel.hpp"
 #include "stslog/sinks/Sink.hpp"
 
 namespace stslog
 {
-    enum class LogLevel : std::uint8_t
-    {
-        TRACE,
-        DEBUG,
-        INFO,
-        WARN,
-        ERROR,
-        CRITICAL,
-        OFF
-    };
-
     class Logger
     {
     public:
@@ -29,6 +18,11 @@ namespace stslog
          : name(std::move(_name)), sinks(std::move(_sinks)) {}
 
         void set_level(LogLevel _lvl) { this->lvl = _lvl; }
+        void reset_format()
+        {
+            for (auto& s: this->sinks)
+                s->set_format("");
+        }
         void set_format(std::string format)
         {
             for (auto& s: this->sinks)
@@ -56,7 +50,7 @@ namespace stslog
             // TODO: 添加额外信息和格式, 支持内容格式化
             if (_lvl < this->lvl) return;
             for (const auto &s: this->sinks)
-                s->write(msg);
+                s->write(_lvl, msg);
         }
 
         std::string name;

@@ -3,6 +3,7 @@
 #include <memory>
 #include <format>
 #include <chrono>
+#include "stslog/LogLevel.hpp"
 
 namespace stslog
 {
@@ -18,9 +19,16 @@ namespace stslog
             std::string sec;
             std::string msec;
         } time;
-        std::string line;
+        struct
+        {
+            std::string file;
+            std::string func;
+            std::string line;
+        } pos;
         std::string lvl;
         std::string msg;
+        std::string threadID;
+        std::string processID;
     };
 
     // struct Formatter { virtual std::string content(const LogInfo &info) = 0; };
@@ -61,12 +69,9 @@ namespace stslog
     };
 
     template <char... cs>
-    class Formatter : public FormatterBase
+    struct Formatter : public FormatterBase
     {
-        std::string content(const LogInfo &info)
-        {
-            return std::string({cs...});
-        }
+        std::string content(const LogInfo &info) override { return ""; }
     };
 
     template <>
@@ -74,21 +79,84 @@ namespace stslog
     {
     public:
         Formatter(const char _c) : c(_c) {};
-        std::string content(const LogInfo &info)
+        std::string content(const LogInfo &info) override
         {
             return std::string(1, c);
         }
+
     private:
         char c;
     };
 
     template <>
-    class Formatter<'%', 'Y'> : public FormatterBase
+    struct Formatter<'%', 'Y'> : public FormatterBase
     {
-    public:
-        std::string content(const LogInfo &info)
+        std::string content(const LogInfo &info) override
         {
             return info.time.year;
+        }
+    };
+
+    template <>
+    struct Formatter<'%', 'm'> : public FormatterBase
+    {
+        std::string content(const LogInfo &info) override
+        {
+            return info.time.month;
+        }
+    };
+
+    template <>
+    struct Formatter<'%', 'd'> : public FormatterBase
+    {
+        std::string content(const LogInfo &info) override
+        {
+            return info.time.day;
+        }
+    };
+
+    template <>
+    struct Formatter<'%', 'H'> : public FormatterBase
+    {
+        std::string content(const LogInfo &info) override
+        {
+            return info.time.hour;
+        }
+    };
+
+    template <>
+    struct Formatter<'%', 'M'> : public FormatterBase
+    {
+        std::string content(const LogInfo &info) override
+        {
+            return info.time.minute;
+        }
+    };
+
+    template <>
+    struct Formatter<'%', 'S'> : public FormatterBase
+    {
+        std::string content(const LogInfo &info) override
+        {
+            return info.time.sec;
+        }
+    };
+
+    template <>
+    struct Formatter<'%', 'l'> : public FormatterBase
+    {
+        std::string content(const LogInfo &info) override
+        {
+            return info.lvl;
+        }
+    };
+
+    template <>
+    struct Formatter<'%', 'v'>: public FormatterBase
+    {
+        std::string content(const LogInfo &info) override
+        {
+            return info.msg;
         }
     };
 }
@@ -98,34 +166,83 @@ namespace stslog
     struct FormatCombiner
     {
     public:
-        void set_format(std::string format)
+        FormatCombiner()
+        {
+            this->set_format();
+        }
+
+        void set_format(std::string format = "")
         {
             if (format.empty())
-                format = "[%H:%M:%S] [%l] %c";
+                format = "[%H:%M:%S] [%l] %v";
 
-            //TODO
             this->formatters.clear();
             this->formatters.reserve(0);
 
+            //TODO
+            bool f = false;
             for (const char c: format)
-                this->formatters.emplace_back(std::make_unique<Formatter<'c'>>(c));
+            {
+                if (f)
+                {
+                    switch (c)
+                    {
+                    case 'Y':
+                        this->formatters.push_back(std::make_unique<Formatter<'%', 'Y'>>()); break;
+                    case 'm':
+                        this->formatters.push_back(std::make_unique<Formatter<'%', 'm'>>()); break;
+                    case 'd':
+                        this->formatters.push_back(std::make_unique<Formatter<'%', 'd'>>()); break;
+                    case 'H':
+                        this->formatters.push_back(std::make_unique<Formatter<'%', 'H'>>()); break;
+                    case 'M':
+                        this->formatters.push_back(std::make_unique<Formatter<'%', 'M'>>()); break;
+                    case 'S':
+                        this->formatters.push_back(std::make_unique<Formatter<'%', 'S'>>()); break;
+                    case 'l':
+                        this->formatters.push_back(std::make_unique<Formatter<'%', 'l'>>()); break;
+                    case 'v':
+                        this->formatters.push_back(std::make_unique<Formatter<'%', 'v'>>()); break;
+                    case '%':
+                        this->formatters.push_back(std::make_unique<Formatter<'c'>>('%')); break;
+                    // default:
+                    //     this->formatters.push_back(std::make_unique<Formatter<'c'>>('%'));
+                    //     this->formatters.push_back(std::make_unique<Formatter<'c'>>(c)); break;
+                    }
+                    f = false;
+                }
+                else
+                {
+                    if (c == '%')
+                        f = true;
+                    else
+                        this->formatters.push_back(std::make_unique<Formatter<'c'>>(c));
+                }
+            }
         }
 
-        std::string content()
+        std::string content(LogLevel lvl, std::string msg)
         {
-            fillInfo();
+            fillInfo(lvl, msg);
 
-            std::string msg;
+            std::string text;
             for (const auto& f: formatters)
-                msg.append(std::move(f->content(info)));
-            return msg;
+                text.append(std::move(f->content(info)));
+            return text;
         }
 
     private:
-        void fillInfo()
+        void fillInfo(stslog::LogLevel lvl, std::string msg)
         {
             auto now = std::chrono::system_clock::now();
             info.time.year = std::format("{:%Y}", now);
+            info.time.month = std::format("{:%m}", now);
+            info.time.day = std::format("{:%d}", now);
+            info.time.hour = std::format("{:%H}", now);
+            info.time.minute = std::format("{:%M}", now);
+            info.time.sec = std::format("{:%S}", floor<std::chrono::seconds>(now));
+            info.lvl = lvl2str(lvl);
+            info.msg = msg;
         };
 
         LogInfo info;

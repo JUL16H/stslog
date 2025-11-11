@@ -12,7 +12,7 @@ namespace stslog
         class Sink
         {
         public:
-            virtual void write(std::string msg) = 0;
+            virtual void write(LogLevel lvl, std::string msg) = 0;
             virtual ~Sink() = default;
 
             void set_format(std::string format)

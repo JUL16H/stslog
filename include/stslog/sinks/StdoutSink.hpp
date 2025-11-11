@@ -8,9 +8,9 @@ namespace stslog::Sinks
     class StdoutSink : public Sink
     {
     public:
-        void write(std::string msg) override
+        void write(LogLevel lvl, std::string msg) override
         {
-            std::cout << this->formatter.content() << std::endl;
+            std::cout << this->formatter.content(lvl, std::move(msg)) << std::endl;
         }
     };
 }
