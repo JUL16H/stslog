@@ -10,7 +10,7 @@ namespace stslog::Sinks
     public:
         void write(std::string msg) override
         {
-            std::cout << msg << std::endl;
+            std::cout << this->formatter.content() << std::endl;
         }
     };
 }

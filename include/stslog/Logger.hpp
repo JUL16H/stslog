@@ -29,6 +29,11 @@ namespace stslog
          : name(std::move(_name)), sinks(std::move(_sinks)) {}
 
         void set_level(LogLevel _lvl) { this->lvl = _lvl; }
+        void set_format(std::string format)
+        {
+            for (auto& s: this->sinks)
+                s->set_format(format);
+        }
 
         void trace(std::string msg) { log(LogLevel::TRACE, msg); }
         void debug(std::string msg) { log(LogLevel::DEBUG, msg); }

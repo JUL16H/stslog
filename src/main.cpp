@@ -9,6 +9,7 @@ int main()
             stslog::make_sink<stslog::Sinks::FileSink>("log.log")
         }
     );
+    logger->set_format("");
     logger->info("hello world");
 
     logger->set_level(stslog::LogLevel::OFF);
