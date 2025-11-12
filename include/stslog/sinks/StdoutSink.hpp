@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stslog/sinks/Sink.hpp"
+#include "stslog/Sink.hpp"
 #include <iostream>
 
 namespace stslog::Sinks
@@ -8,9 +8,9 @@ namespace stslog::Sinks
     class StdoutSink : public Sink
     {
     public:
-        void write(LogLevel lvl, std::string msg) override
+        void write(std::shared_ptr<LogEvent> pevent) override
         {
-            std::cout << this->formatter.content(lvl, std::move(msg)) << '\n';
+            std::cout << pevent->content << '\n';
         }
     };
 }

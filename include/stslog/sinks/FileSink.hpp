@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stslog/sinks/Sink.hpp"
+#include "stslog/Sink.hpp"
 #include <fstream>
 
 namespace stslog::Sinks
@@ -9,11 +9,11 @@ namespace stslog::Sinks
     {
     public:
         FileSink(std::string _file) : Sink(), file(_file) {}
-        void write(LogLevel lvl, std::string msg) override
+        void write(std::shared_ptr<LogEvent> pevent) override
         {
             // TODO 异常捕获 缓冲区 线程安全
             std::ofstream fout(file);
-            fout << formatter.content(lvl, std::move(msg)) << std::endl;
+            fout << pevent->content << std::endl;
         }
 
     private:

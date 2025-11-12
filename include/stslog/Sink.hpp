@@ -1,27 +1,18 @@
 #pragma once
-
 #include <string>
 #include <memory>
-#include "stslog/sinks/Formatter.hpp"
+#include "stslog/Formatter.hpp"
+#include "stslog/LogLevel.hpp"
 
 namespace stslog
 {
-
     namespace Sinks
     {
         class Sink
         {
         public:
-            virtual void write(LogLevel lvl, std::string msg) = 0;
+            virtual void write(std::shared_ptr<LogEvent> event) = 0;
             virtual ~Sink() = default;
-
-            void set_format(std::string format)
-            {
-                this->formatter.set_format(format);
-            }
-
-        protected:
-            FormatCombiner formatter;
         };
     }
 
