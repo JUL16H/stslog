@@ -13,16 +13,26 @@ namespace stslog
     public:
         Logger(std::string _name) : name(std::move(_name)) {}
 
-        void add_sink(std::string name, std::shared_ptr<Sinks::Sink> sink)
+        bool add_sink(std::string name, std::shared_ptr<Sinks::Sink> sink)
         {
+            if (this->pipelines.count(name)) return false;
             pipelines[name] = std::make_shared<LogPipeLine>(sink);
+            return true;
+        }
+        void erase_sink(std::string name) { pipelines.erase(name); }
+        void set_level(LogLevel _lvl) { this->lvl = _lvl; }
+
+        void set_format(std::string format)
+        {
+            for (auto it: pipelines)
+                it.second->set_format(format);
         }
 
-        // void add_sink(std::vector<>)
-
-        void erase_sink(std::string name) { pipelines.erase(name); }
-
-        void set_level(LogLevel _lvl) { this->lvl = _lvl; }
+        void set_format(std::string name, std::string format)
+        {
+            if (!pipelines.count(name)) return;
+            pipelines[name]->set_format(std::move(format));
+        }
 
         void trace(std::string msg) { log(LogLevel::TRACE, msg); }
         void debug(std::string msg) { log(LogLevel::DEBUG, msg); }
@@ -34,7 +44,7 @@ namespace stslog
     private:
         bool shouldLog(LogLevel _lvl)
         {
-            return this->lvl <= _lvl;
+            return this->lvl <= _lvl && !this->pipelines.empty();
         }
 
         void log(LogLevel _lvl, std::string msg)

@@ -39,8 +39,8 @@ namespace stslog
             std::time_t t = std::chrono::system_clock::to_time_t(now);
             std::tm local_tm = *std::localtime(&t);
 
-            time.year = local_tm.tm_year;
-            time.month = local_tm.tm_mon;
+            time.year = local_tm.tm_year + 1900;
+            time.month = local_tm.tm_mon + 1;
             time.day = local_tm.tm_mday;
             time.hour = local_tm.tm_hour;
             time.minute = local_tm.tm_min;

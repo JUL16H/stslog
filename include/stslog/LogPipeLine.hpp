@@ -20,6 +20,11 @@ namespace stslog
             sink->write(pevent);
         }
 
+        void set_format(std::string format)
+        {
+            this->formatter->set_format(std::move(format));
+        }
+
     private:
         std::string name;
         std::shared_ptr<FormatCombiner> formatter;
