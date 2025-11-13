@@ -1,26 +1,28 @@
 #pragma once
 #include <string>
-#include <vector>
 #include <memory>
+#include <unordered_map>
 #include "stslog/LogLevel.hpp"
 #include "stslog/LogPipeLine.hpp"
 
 namespace stslog
 {
     class Logger
+
     {
     public:
         Logger(std::string _name) : name(std::move(_name)) {}
 
         void add_sink(std::string name, std::shared_ptr<Sinks::Sink> sink)
         {
-            pipelines.push_back(std::make_shared<LogPipeLine>(std::move(name), sink));
+            pipelines[name] = std::make_shared<LogPipeLine>(sink);
         }
 
-        void set_level(LogLevel _lvl)
-        {
-            this->lvl = _lvl;
-        }
+        // void add_sink(std::vector<>)
+
+        void erase_sink(std::string name) { pipelines.erase(name); }
+
+        void set_level(LogLevel _lvl) { this->lvl = _lvl; }
 
         void trace(std::string msg) { log(LogLevel::TRACE, msg); }
         void debug(std::string msg) { log(LogLevel::DEBUG, msg); }
@@ -39,14 +41,14 @@ namespace stslog
         {
             if (!shouldLog(_lvl))
                 return;
-            auto event = std::make_shared<LogEvent>(_lvl, std::move(msg));
-            for (const auto &p: pipelines)
-                p->log(event);
+            auto pevent = std::make_shared<LogEvent>(_lvl, std::move(msg));
+            for (const auto it: pipelines)
+                it.second->log(pevent);
         }
 
     private:
         std::string name;
         LogLevel lvl = LogLevel::INFO;
-        std::vector<std::shared_ptr<stslog::LogPipeLine>> pipelines;
+        std::unordered_map<std::string, std::shared_ptr<stslog::LogPipeLine>> pipelines;
     };
 }

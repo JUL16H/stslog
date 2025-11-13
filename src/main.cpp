@@ -13,7 +13,7 @@ int main()
 
     stslog::Logger logger("logger");
     logger.add_sink("stdout", stslog::make_sink<stslog::Sinks::ColoredStdoutSink>());
-    logger.add_sink("stdout", stslog::make_sink<stslog::Sinks::FileSink>("log.log"));
+    logger.add_sink("file", stslog::make_sink<stslog::Sinks::FileSink>("log.log"));
 
     // logger->set_format("[%Y-%m-%d %H:%M:%S] [%l] %v");
     logger.set_level(stslog::LogLevel::TRACE);
