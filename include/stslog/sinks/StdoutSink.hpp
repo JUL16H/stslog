@@ -8,9 +8,9 @@ namespace stslog::Sinks
     class StdoutSink : public Sink
     {
     public:
-        void write(std::shared_ptr<LogEvent> pevent) override
+        void write(const LogEvent &event) override
         {
-            std::cout << pevent->content << '\n';
+            std::cout << event.content << '\n';
         }
     };
 }

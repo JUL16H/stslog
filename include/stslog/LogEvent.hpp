@@ -29,6 +29,7 @@ namespace stslog
             std::string func;
             unsigned line;
         } pos;
+        bool know_pos = false;
 
         std::string content;
 
@@ -45,6 +46,7 @@ namespace stslog
             time.hour = local_tm.tm_hour;
             time.minute = local_tm.tm_min;
             time.sec = local_tm.tm_sec;
+            time.ms = static_cast<unsigned>((std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000).count());
         }
     };
 }

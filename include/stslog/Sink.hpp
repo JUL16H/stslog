@@ -11,7 +11,7 @@ namespace stslog
         class Sink
         {
         public:
-            virtual void write(std::shared_ptr<LogEvent> event) = 0;
+            virtual void write(const LogEvent &event) = 0;
             virtual ~Sink() = default;
         };
     }

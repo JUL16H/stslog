@@ -8,10 +8,10 @@ namespace stslog::Sinks
     class ColoredStdoutSink : public Sink
     {
     public:
-        void write(std::shared_ptr<LogEvent> pevent) override
+        void write(const LogEvent &event) override
         {
             std::string color;
-            switch (pevent->lvl)
+            switch (event.lvl)
             {
             case LogLevel::TRACE:
                 color = "\033[37m"; break;
@@ -28,7 +28,7 @@ namespace stslog::Sinks
             default:
                 color = "";
             }
-            std::cout << color << pevent->content << "\033[0m\n";
+            std::cout << color << event.content << "\033[0m\n";
         }
     };
 }

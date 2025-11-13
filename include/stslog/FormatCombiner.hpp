@@ -44,6 +44,8 @@ namespace stslog
                         this->formatters.push_back(std::make_unique<Formatter<'%', 'l'>>()); break;
                     case 'v':
                         this->formatters.push_back(std::make_unique<Formatter<'%', 'v'>>()); break;
+                    case 'e':
+                        this->formatters.push_back(std::make_unique<Formatter<'%', 'e'>>()); break;
                     case '%':
                         this->formatters.push_back(std::make_unique<Formatter<'c'>>('%')); break;
                     default:
@@ -62,11 +64,12 @@ namespace stslog
             }
         }
 
-        std::string content(const std::shared_ptr<LogEvent> pevent)
+        std::string content(LogEvent event)
         {
             std::string text;
+            text.reserve(256);
             for (const auto& f: formatters)
-                text.append(std::move(f->content(*pevent)));
+                text += f->content(event);
             return text;
         }
 

@@ -30,7 +30,8 @@ namespace stslog
 
         void set_format(std::string name, std::string format)
         {
-            if (!pipelines.count(name)) return;
+            if (!pipelines.count(name))
+                return;
             pipelines[name]->set_format(std::move(format));
         }
 
@@ -47,13 +48,20 @@ namespace stslog
             return this->lvl <= _lvl && !this->pipelines.empty();
         }
 
-        void log(LogLevel _lvl, std::string msg)
+        void log(LogLevel _lvl, std::string msg, std::string file = "", std::string func = "", unsigned line = 0)
         {
             if (!shouldLog(_lvl))
                 return;
-            auto pevent = std::make_shared<LogEvent>(_lvl, std::move(msg));
-            for (const auto it: pipelines)
-                it.second->log(pevent);
+            auto event = LogEvent(_lvl, std::move(msg));
+            event.fillInfo();
+            if (!file.empty())
+                event.pos = {
+                    .file = std::move(file),
+                    .func = std::move(func),
+                    .line = line
+                };
+            for (const auto& [name, p]: pipelines)
+                p->log(event);
         }
 
     private:

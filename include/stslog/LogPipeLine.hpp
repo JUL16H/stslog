@@ -13,11 +13,10 @@ namespace stslog
          : sink(_sink), formatter(std::make_shared<FormatCombiner>()) { }
 
     private:
-        void log(std::shared_ptr<LogEvent> pevent)
+        void log(LogEvent &event)
         {
-            pevent->fillInfo();
-            pevent->content = formatter->content(pevent);
-            sink->write(pevent);
+            event.content = formatter->content(event);
+            sink->write(event);
         }
 
         void set_format(std::string format)
