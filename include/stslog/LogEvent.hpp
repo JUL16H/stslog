@@ -15,38 +15,40 @@ namespace stslog
 
         struct
         {
-            unsigned year;
+            int year;
             unsigned month;
             unsigned day;
             unsigned hour;
             unsigned minute;
             unsigned sec;
-            unsigned ms;
+            unsigned long long ms;
         } time;
         struct
         {
             std::string file;
             std::string func;
-            unsigned line;
+            int line;
         } pos;
-        bool know_pos = false;
 
         std::string content;
 
-        void fillInfo()
+        void fillInfo(LogLevel _lvl, std::tm tm, std::string _msg, std::string file, std::string func, int line)
         {
-            // TODO: 现在不会更换时区，锁定为格林威治时间
-            const auto now = std::chrono::system_clock::now();
-            std::time_t t = std::chrono::system_clock::to_time_t(now);
-            std::tm local_tm = *std::localtime(&t);
+            lvl = _lvl;
+            msg = _msg;
 
-            time.year = local_tm.tm_year + 1900;
-            time.month = local_tm.tm_mon + 1;
-            time.day = local_tm.tm_mday;
-            time.hour = local_tm.tm_hour;
-            time.minute = local_tm.tm_min;
-            time.sec = local_tm.tm_sec;
-            time.ms = static_cast<unsigned>((std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000).count());
+            time.year = tm.tm_year + 1900;
+            time.month = tm.tm_mon + 1;
+            time.day = tm.tm_mday;
+            time.hour = tm.tm_hour;
+            time.minute = tm.tm_min;
+            time.sec = tm.tm_sec;
+            // TODO
+            // time.ms = static_cast<unsigned>((std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000).count());
+
+            pos.file = file;
+            pos.func = func;
+            pos.line = line;
         }
     };
 }

@@ -48,18 +48,44 @@ namespace stslog
             return this->lvl <= _lvl && !this->pipelines.empty();
         }
 
-        void log(LogLevel _lvl, std::string msg, std::string file = "", std::string func = "", unsigned line = 0)
+        LogEvent generate_event(LogLevel lvl, std::string msg, std::string file, std::string func, int line)
         {
-            if (!shouldLog(_lvl))
-                return;
-            auto event = LogEvent(_lvl, std::move(msg));
-            event.fillInfo();
-            if (!file.empty())
-                event.pos = {
+            using namespace std::chrono;
+            auto now = floor<microseconds>(system_clock::now());
+            auto dp = floor<days>(now);
+
+            year_month_day ymd(dp);
+            hh_mm_ss hms(now - dp);
+
+            LogEvent event{
+                .lvl = lvl,
+                .msg = msg,
+                .time = {
+                    .year = static_cast<int>(ymd.year()),
+                    .month = static_cast<unsigned>(ymd.month()),
+                    .day = static_cast<unsigned>(ymd.day()),
+                    .hour = static_cast<unsigned>(hms.hours().count()),
+                    .minute = static_cast<unsigned>(hms.minutes().count()),
+                    .sec = static_cast<unsigned>(hms.seconds().count()),
+                    .ms = static_cast<unsigned>(hms.subseconds().count())
+                },
+                .pos = {
                     .file = std::move(file),
                     .func = std::move(func),
                     .line = line
-                };
+                }
+            };
+
+            return event;
+        }
+
+        void log(LogLevel _lvl, std::string msg, std::string file = "?", std::string func = "?", int line = -1)
+        {
+            if (!shouldLog(_lvl))
+                return;
+
+            auto event = generate_event(_lvl, std::move(msg), std::move(file), std::move(func), line);
+
             for (const auto& [name, p]: pipelines)
                 p->log(event);
         }
