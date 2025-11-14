@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <memory>
+#include <chrono>
 #include <unordered_map>
 #include "stslog/LogLevel.hpp"
 #include "stslog/LogPipeLine.hpp"
