@@ -13,7 +13,7 @@ TEST_CASE("formatter test", "[formatter]")
             .year = 2025,
             .month = 11,
             .day = 15,
-            .hour = 12,
+            .hour = 17,
             .minute = 38,
             .sec = 32,
             .ms = 321
@@ -28,13 +28,27 @@ TEST_CASE("formatter test", "[formatter]")
     SECTION("basic format")
     {
         std::string content = formatter.content(event);
-        REQUIRE(content == "[12:38:32] [INFO] test msg");
+        REQUIRE(content == "[17:38:32] [INFO] test msg");
     }
 
     SECTION("reset format")
     {
         formatter.set_format();
         std::string content = formatter.content(event);
-        REQUIRE(content == "[12:38:32] [INFO] test msg");
+        REQUIRE(content == "[17:38:32] [INFO] test msg");
+    }
+
+    SECTION("time")
+    {
+        formatter.set_format("[%Y-%m-%d %H:%M:%S:%e] [%l] %v");
+        std::string content = formatter.content(event);
+        REQUIRE(content == "[2025-11-15 17:38:32:321] [INFO] test msg");
+    }
+
+    SECTION("pos")
+    {
+        formatter.set_format("[%f] %f:%L [%l] %v");
+        std::string content = formatter.content(event);
+        REQUIRE(content == "[testFile.cpp] testFunc:213 [INFO] test msg");
     }
 }
