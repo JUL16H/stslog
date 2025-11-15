@@ -10,7 +10,7 @@ namespace stslog
         friend class Logger;
     public:
         LogPipeLine(std::shared_ptr<Sinks::Sink> _sink)
-         : sink(_sink), formatter(std::make_shared<FormatCombiner>()) { }
+         : sink(_sink), formatter(std::make_shared<FormatCombiner>()) {}
 
     private:
         void log(LogEvent &event)

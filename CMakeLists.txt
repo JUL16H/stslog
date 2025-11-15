@@ -6,9 +6,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS_RELEASE "_O2")
-
-add_subdirectory(external/Catch2)
+set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 add_library(stslog INTERFACE)
 target_include_directories(stslog
@@ -21,3 +19,7 @@ target_link_libraries(main
     PRIVATE
         stslog
 )
+
+add_subdirectory(external/Catch2)
+enable_testing()
+add_subdirectory(tests)
