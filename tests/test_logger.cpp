@@ -36,6 +36,16 @@ TEST_CASE("test add and erase sink", "[Logger]")
     REQUIRE(sink->event.content.empty());
 }
 
+TEST_CASE("test msg format", "[Logger]")
+{
+    stslog::Logger logger("logger");
+    auto sink = std::make_shared<stslog::Sinks::TestSink>();
+    logger.add_sink("sink", sink);
+
+    logger.info("{}+{}={}", 2, 3, 5);
+    REQUIRE(sink->event.msg == "2+3=5");
+}
+
 TEST_CASE("test Logger::set_format()", "[Logger]")
 {
     stslog::Logger logger("logger");

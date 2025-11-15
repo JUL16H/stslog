@@ -135,7 +135,7 @@ namespace stslog
     {
         std::string content(const LogEvent &event) override
         {
-            return std::to_string(event.time.ms);
+            return std::to_string(event.time.subSec);
         }
     };
 
@@ -145,6 +145,7 @@ namespace stslog
     {
         std::string content(const LogEvent &event) override
         {
+            return {};
         }
     };
 
@@ -154,6 +155,7 @@ namespace stslog
     {
         std::string content(const LogEvent &event) override
         {
+            return {};
         }
     };
 
@@ -163,6 +165,7 @@ namespace stslog
     {
         std::string content(const LogEvent &event) override
         {
+            return {};
         }
     };
 
@@ -172,6 +175,7 @@ namespace stslog
     {
         std::string content(const LogEvent &event) override
         {
+            return {};
         }
     };
 
@@ -181,6 +185,7 @@ namespace stslog
     {
         std::string content(const LogEvent &event) override
         {
+            return {};
         }
     };
 
@@ -200,6 +205,7 @@ namespace stslog
     {
         std::string content(const LogEvent &event) override
         {
+            return {};
         }
     };
 
@@ -209,6 +215,7 @@ namespace stslog
     {
         std::string content(const LogEvent &event) override
         {
+            return {};
         }
     };
 

@@ -20,7 +20,7 @@ namespace stslog
             unsigned hour;
             unsigned minute;
             unsigned sec;
-            unsigned long long ms;
+            unsigned long long subSec;
         } time;
         struct
         {

@@ -16,7 +16,7 @@ TEST_CASE("formatter test", "[formatter]")
             .hour = 17,
             .minute = 38,
             .sec = 32,
-            .ms = 321
+            .subSec = 321
         },
         .pos = {
             .file = "testFile.cpp",

@@ -11,9 +11,10 @@ int main()
     //     }
     // );
 
-    stslog::Logger logger("logger");
-    logger.add_sink("coloredStdout", stslog::make_sink<stslog::Sinks::ColoredStdoutSink>());
-    logger.add_sink("file", stslog::make_sink<stslog::Sinks::FileSink>("log.log"));
+    stslog::Logger logger("logger", {
+        {"file", stslog::make_sink<stslog::Sinks::FileSink>("log.log")},
+        {"colored stdout", stslog::make_sink<stslog::Sinks::ColoredStdoutSink>()},
+    });
 
     logger.set_format("[%Y-%m-%d %H:%M:%S:%e] [%l] %v");
     logger.set_level(stslog::LogLevel::TRACE);

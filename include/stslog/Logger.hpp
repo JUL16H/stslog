@@ -1,8 +1,10 @@
 #pragma once
-#include <string>
 #include <memory>
 #include <chrono>
 #include <unordered_map>
+#include <format>
+#include <vector>
+#include <utility>
 #include "stslog/LogLevel.hpp"
 #include "stslog/LogPipeLine.hpp"
 
@@ -12,16 +14,32 @@ namespace stslog
 
     {
     public:
-        Logger(std::string _name) : name(std::move(_name)) {}
+        Logger(std::string loggerName, std::string sinkName, std::shared_ptr<Sinks::Sink> sink) : name(std::move(loggerName))
+        {
+            this->add_sink(sinkName, sink);
+        }
+
+        Logger(std::string _name, std::vector<std::pair<std::string, std::shared_ptr<Sinks::Sink>>> sinkVec = {}) : name(std::move(_name))
+        {
+            for (auto [name, sink]: sinkVec)
+                add_sink(name, sink);
+        }
 
         bool add_sink(std::string name, std::shared_ptr<Sinks::Sink> sink)
         {
-            if (this->pipelines.count(name)) return false;
+            if (name.empty() || this->pipelines.count(name))
+                return false;
             pipelines[name] = std::make_shared<LogPipeLine>(sink);
             return true;
         }
         void erase_sink(std::string name) { pipelines.erase(name); }
         void set_level(LogLevel _lvl) { this->lvl = _lvl; }
+        void set_sink_level(std::string name, LogLevel lvl)
+        {
+            if (name.empty() || !pipelines.count(name))
+                return;
+            pipelines[name]->set_level(lvl);
+        }
 
         void set_format(std::string format)
         {
@@ -31,7 +49,7 @@ namespace stslog
 
         void set_format(std::string name, std::string format)
         {
-            if (!pipelines.count(name))
+            if (name.empty() || !pipelines.count(name))
                 return;
             pipelines[name]->set_format(std::move(format));
         }
@@ -85,7 +103,7 @@ namespace stslog
                     .hour = static_cast<unsigned>(hms.hours().count()),
                     .minute = static_cast<unsigned>(hms.minutes().count()),
                     .sec = static_cast<unsigned>(hms.seconds().count()),
-                    .ms = static_cast<unsigned>(hms.subseconds().count())
+                    .subSec = static_cast<unsigned>(hms.subseconds().count())
                 },
                 .pos = {
                     .file = std::move(file),
@@ -126,4 +144,14 @@ namespace stslog
         LogLevel lvl = LogLevel::INFO;
         std::unordered_map<std::string, std::shared_ptr<stslog::LogPipeLine>> pipelines;
     };
+
+    inline std::shared_ptr<Logger> make_logger(std::string loggerName, std::string sinkName, std::shared_ptr<Sinks::Sink> sink)
+    {
+        return std::make_shared<Logger>(loggerName, sinkName, sink);
+    }
+
+    inline std::shared_ptr<Logger> make_logger(std::string name, std::vector<std::pair<std::string, std::shared_ptr<Sinks::Sink>>> sinkVec = {})
+    {
+        return std::make_shared<Logger>(name, sinkVec);
+    }
 }
