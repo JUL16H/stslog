@@ -36,12 +36,29 @@ namespace stslog
             pipelines[name]->set_format(std::move(format));
         }
 
-        void trace(std::string msg) { log(LogLevel::TRACE, msg); }
-        void debug(std::string msg) { log(LogLevel::DEBUG, msg); }
-        void info(std::string msg) { log(LogLevel::INFO, msg); }
-        void warn(std::string msg) { log(LogLevel::WARN, msg); }
-        void error(std::string msg) { log(LogLevel::ERROR, msg); }
-        void critical(std::string msg) { log(LogLevel::CRITICAL, msg); }
+        template <typename... Args>
+        void trace(std::format_string<Args...> fmt, Args&&... msgs) { log(LogLevel::TRACE, fmt, std::forward<Args>(msgs)...); }
+        void trace(const std::string& msg) { log(LogLevel::TRACE, "{}", msg); }
+
+        template <typename... Args>
+        void debug(std::format_string<Args...> fmt, Args&&... msgs) { log(LogLevel::DEBUG, fmt, std::forward<Args>(msgs)...); }
+        void debug(const std::string& msg) { log(LogLevel::DEBUG, "{}", msg); }
+
+        template <typename... Args>
+        void info(std::format_string<Args...> fmt, Args&&... msgs) { log(LogLevel::INFO, fmt, std::forward<Args>(msgs)...); }
+        void info(const std::string& msg) { log(LogLevel::INFO, "{}", msg); }
+
+        template <typename... Args>
+        void warn(std::format_string<Args...> fmt, Args&&... msgs) { log(LogLevel::WARN, fmt, std::forward<Args>(msgs)...); }
+        void warn(const std::string& msg) { log(LogLevel::WARN, "{}", msg); }
+
+        template <typename... Args>
+        void error(std::format_string<Args...> fmt, Args&&... msgs) { log(LogLevel::ERROR, fmt, std::forward<Args>(msgs)...); }
+        void error(const std::string& msg) { log(LogLevel::ERROR, "{}", msg); }
+
+        template <typename... Args>
+        void critical(std::format_string<Args...> fmt, Args&&... msgs) { log(LogLevel::CRITICAL, fmt, std::forward<Args>(msgs)...); }
+        void critical(const std::string& msg) { log(LogLevel::CRITICAL, "{}", msg); }
 
     private:
         bool shouldLog(LogLevel _lvl)
@@ -49,7 +66,7 @@ namespace stslog
             return this->lvl <= _lvl && !this->pipelines.empty();
         }
 
-        LogEvent generate_event(LogLevel lvl, std::string msg, std::string file, std::string func, int line)
+        LogEvent generate_event(LogLevel lvl, std::string msg, std::string file = "?", std::string func = "?", int line = -1)
         {
             using namespace std::chrono;
             auto now = floor<microseconds>(system_clock::now());
@@ -80,12 +97,25 @@ namespace stslog
             return event;
         }
 
-        void log(LogLevel _lvl, std::string msg, std::string file = "?", std::string func = "?", int line = -1)
+        template <typename... Args>
+        void log(LogLevel _lvl, std::format_string<Args...> fmt, Args&&... msgs)
         {
             if (!shouldLog(_lvl))
                 return;
 
-            auto event = generate_event(_lvl, std::move(msg), std::move(file), std::move(func), line);
+            auto event = generate_event(_lvl, std::format(fmt, std::forward<Args>(msgs)...));
+
+            for (const auto& [name, p]: pipelines)
+                p->log(event);
+        }
+
+        template <typename... Args>
+        void log(LogLevel _lvl, std::string file, std::string func, int line, std::format_string<Args...> fmt, Args&&... msgs)
+        {
+            if (!shouldLog(_lvl))
+                return;
+
+            auto event = generate_event(_lvl, std::format(fmt, std::forward<Args>(msgs)...), std::move(file), std::move(func), line);
 
             for (const auto& [name, p]: pipelines)
                 p->log(event);

@@ -12,7 +12,7 @@ int main()
     // );
 
     stslog::Logger logger("logger");
-    // logger.add_sink("coloredStdout", stslog::make_sink<stslog::Sinks::ColoredStdoutSink>());
+    logger.add_sink("coloredStdout", stslog::make_sink<stslog::Sinks::ColoredStdoutSink>());
     logger.add_sink("file", stslog::make_sink<stslog::Sinks::FileSink>("log.log"));
 
     logger.set_format("[%Y-%m-%d %H:%M:%S:%e] [%l] %v");
@@ -25,8 +25,7 @@ int main()
     logger.error("hello world");
     logger.critical("hello world");
 
-    for (int i = 0; i < 10; i++)
-        logger.trace("hello world");
+    logger.info("{} + {} = {}", 2, 3, 5);
 
     logger.set_level(stslog::LogLevel::OFF);
     logger.error("off");
