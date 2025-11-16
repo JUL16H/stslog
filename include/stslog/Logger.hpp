@@ -19,6 +19,11 @@ namespace stslog
             this->add_sink(sinkName, sink);
         }
 
+        Logger(std::string name, std::pair<std::string, std::shared_ptr<Sinks::Sink>> sink) : name(std::move(name))
+        {
+            this->add_sink(sink.first, sink.second);
+        }
+
         Logger(std::string _name, std::vector<std::pair<std::string, std::shared_ptr<Sinks::Sink>>> sinkVec = {}) : name(std::move(_name))
         {
             for (auto [name, sink]: sinkVec)
@@ -148,6 +153,11 @@ namespace stslog
     inline std::shared_ptr<Logger> make_logger(std::string loggerName, std::string sinkName, std::shared_ptr<Sinks::Sink> sink)
     {
         return std::make_shared<Logger>(loggerName, sinkName, sink);
+    }
+
+    inline std::shared_ptr<Logger> make_logger(std::string name, std::pair<std::string, std::shared_ptr<Sinks::Sink>> sink)
+    {
+        return std::make_shared<Logger>(name, sink);
     }
 
     inline std::shared_ptr<Logger> make_logger(std::string name, std::vector<std::pair<std::string, std::shared_ptr<Sinks::Sink>>> sinkVec = {})

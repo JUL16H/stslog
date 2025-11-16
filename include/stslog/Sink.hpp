@@ -1,8 +1,6 @@
 #pragma once
-#include <string>
 #include <memory>
-#include "stslog/Formatter.hpp"
-#include "stslog/LogLevel.hpp"
+#include "stslog/LogEvent.hpp"
 
 namespace stslog
 {
