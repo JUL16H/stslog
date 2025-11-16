@@ -24,6 +24,14 @@ namespace stslog
             return true;
         }
 
+        std::shared_ptr<Logger> get_logger(std::string name)
+        {
+            std::shared_ptr<Logger> rst = nullptr;
+            if (!name.empty() && loggerMap.count(name))
+                rst = loggerMap[name];
+            return rst;
+        }
+
         void erase_logger(std::string name)
         {
             if (!loggerMap.count(name))
