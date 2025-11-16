@@ -14,10 +14,13 @@ target_include_directories(stslog
         ${CMAKE_SOURCE_DIR}/include
 )
 
-add_executable(main ${CMAKE_SOURCE_DIR}/src/main.cpp)
-target_link_libraries(main
+add_executable(stslog_example ${CMAKE_SOURCE_DIR}/examples/main.cpp)
+target_link_libraries(stslog_example
     PRIVATE
         stslog
+)
+set_target_properties(stslog_example PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/examples/
 )
 
 add_subdirectory(external/Catch2)

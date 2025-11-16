@@ -5,3 +5,6 @@ target_link_libraries(stslog_tests
         stslog
         Catch2::Catch2WithMain
 )
+set_target_properties(stslog_tests PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)

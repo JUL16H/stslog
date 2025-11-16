@@ -12,8 +12,23 @@ namespace stslog
         static LogRegistry& instance()
         {
             static LogRegistry inst;
-            inst.loggerMap["default"] = make_logger("default", "colored stdout sink", make_sink<Sinks::ColoredStdoutSink>());
+            inst.enroll_logger(make_logger("default", "default sink", make_sink<Sinks::ColoredStdoutSink>()));
             return inst;
+        }
+
+        bool enroll_logger(std::shared_ptr<Logger> logger)
+        {
+            if (logger->name.empty() || loggerMap.count(logger->name))
+                return false;
+            loggerMap[logger->name] = logger;
+            return true;
+        }
+
+        void erase_logger(std::string name)
+        {
+            if (!loggerMap.count(name))
+                return;
+            loggerMap.erase(name);
         }
 
     private:

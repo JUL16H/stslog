@@ -11,8 +11,8 @@
 namespace stslog
 {
     class Logger
-
     {
+        friend class LogRegistry;
     public:
         Logger(std::string loggerName, std::string sinkName, std::shared_ptr<Sinks::Sink> sink) : name(std::move(loggerName))
         {
