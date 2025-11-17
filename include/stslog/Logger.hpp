@@ -145,7 +145,7 @@ namespace stslog
         }
 
     private:
-        std::string name;
+        const std::string name;
         LogLevel lvl = LogLevel::INFO;
         std::unordered_map<std::string, std::shared_ptr<stslog::LogPipeLine>> pipelines;
     };
