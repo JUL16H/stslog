@@ -133,7 +133,8 @@ namespace stslog
     {
         std::string content(const LogEvent &event) override
         {
-            return std::to_string(event.time.subSec);
+            // 是否有可能subSec就是毫秒
+            return std::to_string(event.time.subSec / 1000);
         }
     };
 
@@ -143,7 +144,7 @@ namespace stslog
     {
         std::string content(const LogEvent &event) override
         {
-            return {};
+            return std::to_string(event.time.subSec);
         }
     };
 
@@ -160,26 +161,6 @@ namespace stslog
     // 时区名
     template <>
     struct Formatter<'%', 'Z'> : public FormatterBase
-    {
-        std::string content(const LogEvent &event) override
-        {
-            return {};
-        }
-    };
-
-    // %Y-%m-%d
-    template <>
-    struct Formatter<'%', 'F'> : public FormatterBase
-    {
-        std::string content(const LogEvent &event) override
-        {
-            return {};
-        }
-    };
-
-    // %H:%M:%S
-    template <>
-    struct Formatter<'%', 'T'> : public FormatterBase
     {
         std::string content(const LogEvent &event) override
         {
