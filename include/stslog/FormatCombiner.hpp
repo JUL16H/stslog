@@ -6,24 +6,24 @@
 
 namespace stslog
 {
-    struct FormatCombiner
+    class FormatCombiner
     {
     public:
         FormatCombiner()
         {
-            this->set_format();
+            this->set_pattern("+");
         }
 
-        void set_format(std::string format = "")
+        void set_pattern(std::string pattern)
         {
-            if (format.empty())
-                format = "[%H:%M:%S] [%l] %v";
+            if (pattern == "+")
+                pattern = "[%H:%M:%S] [%l] %v";
 
             this->formatters.clear();
 
             //TODO
             bool f = false;
-            for (const char c: format)
+            for (const char c: pattern)
             {
                 if (f)
                 {
@@ -41,12 +41,14 @@ namespace stslog
                         this->formatters.push_back(std::make_unique<Formatter<'%', 'M'>>()); break;
                     case 'S':
                         this->formatters.push_back(std::make_unique<Formatter<'%', 'S'>>()); break;
+                    case 'e':
+                        this->formatters.push_back(std::make_unique<Formatter<'%', 'e'>>()); break;
+                    case 'f':
+                        this->formatters.push_back(std::make_unique<Formatter<'%', 'f'>>()); break;
                     case 'l':
                         this->formatters.push_back(std::make_unique<Formatter<'%', 'l'>>()); break;
                     case 'v':
                         this->formatters.push_back(std::make_unique<Formatter<'%', 'v'>>()); break;
-                    case 'e':
-                        this->formatters.push_back(std::make_unique<Formatter<'%', 'e'>>()); break;
                     case '%':
                         this->formatters.push_back(std::make_unique<Formatter<'c'>>('%')); break;
                     default:
@@ -75,7 +77,6 @@ namespace stslog
         }
 
     private:
-
         std::vector<std::unique_ptr<FormatterBase>> formatters;
     };
 }

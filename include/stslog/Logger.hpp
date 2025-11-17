@@ -46,17 +46,17 @@ namespace stslog
             pipelines[name]->set_level(lvl);
         }
 
-        void set_format(std::string format)
+        void set_pattern(std::string pattern)
         {
             for (auto it: pipelines)
-                it.second->set_format(format);
+                it.second->set_pattern(pattern);
         }
 
-        void set_format(std::string name, std::string format)
+        void set_pattern(std::string name, std::string pattern)
         {
             if (name.empty() || !pipelines.count(name))
                 return;
-            pipelines[name]->set_format(std::move(format));
+            pipelines[name]->set_pattern(std::move(pattern));
         }
 
         template <typename... Args>

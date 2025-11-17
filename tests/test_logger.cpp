@@ -5,7 +5,7 @@
 TEST_CASE("test Logger::should_log()", "[Logger]")
 {
     stslog::Logger logger("logger");
-    logger.set_format("%v");
+    logger.set_pattern("%v");
 
     REQUIRE_NOTHROW(logger.trace("test"));
 
@@ -46,7 +46,7 @@ TEST_CASE("test msg format", "[Logger]")
     REQUIRE(sink->event.msg == "2+3=5");
 }
 
-TEST_CASE("test Logger::set_format()", "[Logger]")
+TEST_CASE("test Logger::set_pattern()", "[Logger]")
 {
     stslog::Logger logger("logger");
 
@@ -56,12 +56,12 @@ TEST_CASE("test Logger::set_format()", "[Logger]")
     logger.add_sink("sink1", sink1);
     logger.add_sink("sink2", sink2);
 
-    logger.set_format("%v");
+    logger.set_pattern("%v");
     logger.critical("test1");
     REQUIRE(sink1->event.content == "test1");
     REQUIRE(sink2->event.content == "test1");
 
-    logger.set_format("sink1", "%l");
+    logger.set_pattern("sink1", "%l");
     logger.warn("test2");
     REQUIRE(sink1->event.content == "WARN");
     REQUIRE(sink2->event.content == "test2");

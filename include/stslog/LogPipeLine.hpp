@@ -21,9 +21,9 @@ namespace stslog
 
         void set_level(LogLevel _lvl) { lvl = _lvl; }
 
-        void set_format(std::string format)
+        void set_pattern(std::string pattern)
         {
-            this->formatter->set_format(std::move(format));
+            this->formatter->set_pattern(std::move(pattern));
         }
 
     private:

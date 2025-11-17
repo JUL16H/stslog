@@ -33,21 +33,21 @@ TEST_CASE("formatter test", "[formatter]")
 
     SECTION("reset format")
     {
-        formatter.set_format();
+        formatter.set_pattern("+");
         std::string content = formatter.content(event);
         REQUIRE(content == "[17:38:32] [INFO] test msg");
     }
 
     SECTION("time")
     {
-        formatter.set_format("[%Y-%m-%d %H:%M:%S:%e] [%l] %v");
+        formatter.set_pattern("[%Y-%m-%d %H:%M:%S:%f] [%l] %v");
         std::string content = formatter.content(event);
         REQUIRE(content == "[2025-11-15 17:38:32:321] [INFO] test msg");
     }
 
     SECTION("pos")
     {
-        formatter.set_format("[%f] %f:%L [%l] %v");
+        formatter.set_pattern("[%f] %f:%L [%l] %v");
         std::string content = formatter.content(event);
         REQUIRE(content == "[testFile.cpp] testFunc:213 [INFO] test msg");
     }
