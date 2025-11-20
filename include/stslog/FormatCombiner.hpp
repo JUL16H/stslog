@@ -22,7 +22,6 @@ namespace stslog
 
         void set_pattern(std::string pattern)
         {
-
         }
 
         std::string content(LogEvent event)
