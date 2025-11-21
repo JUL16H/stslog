@@ -5,27 +5,22 @@
 #include <algorithm>
 #include "stslog/Formatter.hpp"
 
-namespace stslog
-{
-    class FormatCombiner
-    {
+namespace stslog {
+
+    class FormatCombiner {
     public:
-        FormatCombiner()
-        {
+        FormatCombiner() {
             this->set_pattern("+");
         }
 
-        constexpr void initPatternTrie()
-        {
+        constexpr void initPatternTrie() {
 
         }
 
-        void set_pattern(std::string pattern)
-        {
+        void set_pattern(std::string pattern) {
         }
 
-        std::string content(LogEvent event)
-        {
+        std::string content(LogEvent event) {
             std::string text;
             text.reserve(256);
             for (const auto& f: formatters)
@@ -36,4 +31,5 @@ namespace stslog
     private:
         std::vector<std::unique_ptr<FormatterBase>> formatters;
     };
+
 }

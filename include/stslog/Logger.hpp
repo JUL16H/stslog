@@ -8,52 +8,45 @@
 #include "stslog/LogLevel.hpp"
 #include "stslog/LogPipeLine.hpp"
 
-namespace stslog
-{
-    class Logger
-    {
+namespace stslog {
+
+    class Logger {
         friend class LogRegistry;
     public:
-        Logger(std::string loggerName, std::string sinkName, std::shared_ptr<Sinks::Sink> sink) : name(std::move(loggerName))
-        {
+        Logger(std::string loggerName, std::string sinkName, std::shared_ptr<Sinks::Sink> sink) : name(std::move(loggerName)) {
             this->add_sink(sinkName, sink);
         }
 
-        Logger(std::string name, std::pair<std::string, std::shared_ptr<Sinks::Sink>> sink) : name(std::move(name))
-        {
+        Logger(std::string name, std::pair<std::string, std::shared_ptr<Sinks::Sink>> sink) : name(std::move(name)) {
             this->add_sink(sink.first, sink.second);
         }
 
-        Logger(std::string _name, std::vector<std::pair<std::string, std::shared_ptr<Sinks::Sink>>> sinkVec = {}) : name(std::move(_name))
-        {
+        Logger(std::string _name, std::vector<std::pair<std::string, std::shared_ptr<Sinks::Sink>>> sinkVec = {}) : name(std::move(_name)) {
             for (auto [name, sink]: sinkVec)
                 add_sink(name, sink);
         }
 
-        bool add_sink(std::string name, std::shared_ptr<Sinks::Sink> sink)
-        {
+        bool add_sink(std::string name, std::shared_ptr<Sinks::Sink> sink) {
             if (name.empty() || this->pipelines.count(name))
                 return false;
             pipelines[name] = std::make_shared<LogPipeLine>(sink);
             return true;
         }
+
         void erase_sink(std::string name) { pipelines.erase(name); }
         void set_level(LogLevel _lvl) { this->lvl = _lvl; }
-        void set_sink_level(std::string name, LogLevel lvl)
-        {
+        void set_sink_level(std::string name, LogLevel lvl) {
             if (name.empty() || !pipelines.count(name))
                 return;
             pipelines[name]->set_level(lvl);
         }
 
-        void set_pattern(std::string pattern)
-        {
+        void set_pattern(std::string pattern) {
             for (auto it: pipelines)
                 it.second->set_pattern(pattern);
         }
 
-        void set_pattern(std::string name, std::string pattern)
-        {
+        void set_pattern(std::string name, std::string pattern) {
             if (name.empty() || !pipelines.count(name))
                 return;
             pipelines[name]->set_pattern(std::move(pattern));
@@ -84,13 +77,11 @@ namespace stslog
         void critical(const std::string& msg) { log(LogLevel::CRITICAL, "{}", msg); }
 
     private:
-        bool shouldLog(LogLevel _lvl)
-        {
+        bool shouldLog(LogLevel _lvl) {
             return this->lvl <= _lvl && !this->pipelines.empty();
         }
 
-        LogEvent generate_event(LogLevel lvl, std::string msg, std::string file = "?", std::string func = "?", int line = -1)
-        {
+        LogEvent generate_event(LogLevel lvl, std::string msg, std::string file = "?", std::string func = "?", int line = -1) {
             using namespace std::chrono;
             auto now = floor<microseconds>(system_clock::now());
             auto dp = floor<days>(now);
@@ -121,8 +112,7 @@ namespace stslog
         }
 
         template <typename... Args>
-        void log(LogLevel _lvl, std::format_string<Args...> fmt, Args&&... msgs)
-        {
+        void log(LogLevel _lvl, std::format_string<Args...> fmt, Args&&... msgs) {
             if (!shouldLog(_lvl))
                 return;
 
@@ -133,8 +123,7 @@ namespace stslog
         }
 
         template <typename... Args>
-        void log(LogLevel _lvl, std::string file, std::string func, int line, std::format_string<Args...> fmt, Args&&... msgs)
-        {
+        void log(LogLevel _lvl, std::string file, std::string func, int line, std::format_string<Args...> fmt, Args&&... msgs) {
             if (!shouldLog(_lvl))
                 return;
 
@@ -150,18 +139,16 @@ namespace stslog
         std::unordered_map<std::string, std::shared_ptr<stslog::LogPipeLine>> pipelines;
     };
 
-    inline std::shared_ptr<Logger> make_logger(std::string loggerName, std::string sinkName, std::shared_ptr<Sinks::Sink> sink)
-    {
+    inline std::shared_ptr<Logger> make_logger(std::string loggerName, std::string sinkName, std::shared_ptr<Sinks::Sink> sink) {
         return std::make_shared<Logger>(loggerName, sinkName, sink);
     }
 
-    inline std::shared_ptr<Logger> make_logger(std::string name, std::pair<std::string, std::shared_ptr<Sinks::Sink>> sink)
-    {
+    inline std::shared_ptr<Logger> make_logger(std::string name, std::pair<std::string, std::shared_ptr<Sinks::Sink>> sink) {
         return std::make_shared<Logger>(name, sink);
     }
 
-    inline std::shared_ptr<Logger> make_logger(std::string name, std::vector<std::pair<std::string, std::shared_ptr<Sinks::Sink>>> sinkVec = {})
-    {
+    inline std::shared_ptr<Logger> make_logger(std::string name, std::vector<std::pair<std::string, std::shared_ptr<Sinks::Sink>>> sinkVec = {}) {
         return std::make_shared<Logger>(name, sinkVec);
     }
+
 }
