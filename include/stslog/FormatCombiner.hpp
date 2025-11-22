@@ -2,7 +2,6 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include <algorithm>
 #include "stslog/Formatter.hpp"
 
 namespace stslog {
