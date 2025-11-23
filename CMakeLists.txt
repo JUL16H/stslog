@@ -19,7 +19,7 @@ target_include_directories(stslog
 option(STSLOG_BUILD_EXAMPLES "Build stslog examples" ON)
 option(STSLOG_BUILD_TESTS "Build stslog tests" ON)
 
-if (STSLOG_BUUILD_EXAMPLES)
+if (STSLOG_BUILD_EXAMPLES)
     add_executable(stslog_example ${CMAKE_SOURCE_DIR}/examples/main.cpp)
     target_link_libraries(stslog_example
         PRIVATE

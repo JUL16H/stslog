@@ -10,7 +10,7 @@ namespace stslog::Sinks {
             std::string color;
             switch (event.lvl) {
             case LogLevel::TRACE:
-                color = "\033[37m"; break;
+                color = "\033[90m"; break;
             case LogLevel::DEBUG:
                 color = "\033[36m"; break;
             case LogLevel::INFO:
