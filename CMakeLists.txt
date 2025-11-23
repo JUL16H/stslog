@@ -16,7 +16,7 @@ target_include_directories(stslog
         $<INSTALL_INTERFACE:include>
 )
 
-option(STSLOG_BUUILD_EXAMPLES "Build stslog examples" ON)
+option(STSLOG_BUILD_EXAMPLES "Build stslog examples" ON)
 option(STSLOG_BUILD_TESTS "Build stslog tests" ON)
 
 if (STSLOG_BUUILD_EXAMPLES)
