@@ -1,0 +1,967 @@
+
+===== FILE: F:\stslog\examples\main.cpp =====
+----------------------------------------
+#include <iostream>
+#include "stslog/stslog.hpp"
+#include "stslog/sinks.hpp"
+
+void bar()
+{
+    for (int i = 0; i < 80; i++)
+        std::cout << "=";
+    std::cout << '\n';
+}
+
+void basic_use()
+{
+    stslog::Logger logger("logger", {
+        {"file", stslog::make_sink<stslog::Sinks::FileSink>("log.log")},
+        {"colored stdout", stslog::make_sink<stslog::Sinks::ColoredStdoutSink>()},
+    });
+
+    logger.set_pattern("[%Y-%m-%d %H:%M:%S:%e] [%l] %v");
+    logger.set_level(stslog::LogLevel::TRACE);
+
+    logger.trace("hello stslog");
+    logger.debug("hello stslog");
+    logger.info("hello stslog");
+    logger.warn("hello stslog");
+    logger.error("hello stslog");
+    logger.critical("hello stslog");
+
+    logger.set_pattern("+");
+    logger.info("{} + {} = {}", 2, 3, 5);
+
+    logger.set_level(stslog::LogLevel::OFF);
+    logger.error("off");
+}
+
+void use_registry()
+{
+    auto logger = stslog::make_logger("logger", "colored sink", stslog::make_sink<stslog::Sinks::ColoredStdoutSink>());
+    stslog::LogRegistry::instance().enroll_logger(logger);
+    logger->set_pattern("%v");
+
+    auto logger_in_registry = stslog::LogRegistry::instance().get_logger("logger");
+    logger_in_registry->info("hello stslog");
+}
+
+int main()
+{
+    basic_use(); bar();
+    use_registry(); bar();
+    return 0;
+}
+
+
+
+===== FILE: F:\stslog\include\stslog\FormatCombiner.hpp =====
+----------------------------------------
+#pragma once
+#include <string>
+#include <memory>
+#include <vector>
+#include "stslog/Formatter.hpp"
+
+namespace stslog {
+
+    class FormatCombiner {
+    public:
+        FormatCombiner() {
+            this->set_pattern("+");
+        }
+
+        constexpr void initPatternTrie() {
+
+        }
+
+        void set_pattern(std::string pattern) {
+            formatters.clear();
+
+            if (pattern == "+")
+                pattern = "[%H:%M:%S] [%l] %v";
+
+            bool normal = true;
+            for (const auto c: pattern) {
+                if (normal) {
+                    if (c != '%')
+                        formatters.push_back(std::make_unique<Formatter<'c'>>(c));
+                    else
+                        normal = false;
+                }
+                else {
+                    switch (c) {
+                    case '%':
+                        formatters.push_back(std::make_unique<Formatter<'c'>>('%'));
+                        break;
+                    case 'Y':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'Y'>>());
+                        break;
+                    case 'y':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'y'>>());
+                        break;
+                    case 'm':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'm'>>());
+                        break;
+                    case 'd':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'd'>>());
+                        break;
+                    case 'H':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'H'>>());
+                        break;
+                    case 'I':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'I'>>());
+                        break;
+                    case 'M':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'M'>>());
+                        break;
+                    case 'S':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'S'>>());
+                        break;
+                    case 'e':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'e'>>());
+                        break;
+                    case 'f':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'f'>>());
+                        break;
+                    case 'z':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'z'>>());
+                        break;
+                    case 'Z':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'Z'>>());
+                        break;
+                    case 'l':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'l'>>());
+                        break;
+                    case 't':
+                        formatters.push_back(std::make_unique<Formatter<'%', 't'>>());
+                        break;
+                    case 'p':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'p'>>());
+                        break;
+                    case 'v':
+                        formatters.push_back(std::make_unique<Formatter<'%', 'v'>>());
+                        break;
+                    default:
+                        formatters.push_back(std::make_unique<Formatter<'s'>>("%?"));
+                    }
+                    normal = true;
+                }
+            }
+        }
+
+        std::string content(LogEvent event) {
+            std::string text;
+            text.reserve(256);
+            for (const auto& f: formatters)
+                text += f->content(event);
+            return text;
+        }
+
+    private:
+        std::vector<std::unique_ptr<FormatterBase>> formatters;
+    };
+
+}
+
+
+
+===== FILE: F:\stslog\include\stslog\Formatter.hpp =====
+----------------------------------------
+#pragma once
+#include <string>
+#include "stslog/LogEvent.hpp"
+
+namespace stslog {
+
+    struct FormatterBase {
+        virtual ~FormatterBase() = default;
+        virtual std::string content(const LogEvent &event) = 0;
+    };
+
+    template <char... cs>
+    struct Formatter : public FormatterBase {
+        std::string content(const LogEvent &event) override { return ""; }
+    };
+
+    // 生字符
+    template <>
+    class Formatter<'c'> : public FormatterBase {
+    public:
+        Formatter(const char _c) : c(_c) {};
+        std::string content(const LogEvent&) override {
+            return std::string(1, c);
+        }
+
+    private:
+        char c;
+    };
+
+    // 生字符串
+    template <>
+    class Formatter<'s'> : public FormatterBase {
+    public:
+        Formatter(std::string _s) : s(std::move(_s)) {};
+        std::string content(const LogEvent&) override {
+            return s;
+        }
+
+    private:
+        std::string s;
+    };
+
+
+    // 年
+    template <>
+    struct Formatter<'%', 'Y'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return std::to_string(event.time.year);
+        }
+    };
+
+    // 年(后2位)
+    template <>
+    struct Formatter<'%', 'y'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return std::to_string(event.time.year % 100);
+        }
+    };
+
+    // 月
+    template <>
+    struct Formatter<'%', 'm'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return std::to_string(event.time.month);
+        }
+    };
+
+    // 日
+    template <>
+    struct Formatter<'%', 'd'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return std::to_string(event.time.day);
+        }
+    };
+
+    // 小时(24h)
+    template <>
+    struct Formatter<'%', 'H'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return std::to_string(event.time.hour);
+        }
+    };
+
+    // 小时(12h)
+    template <>
+    struct Formatter<'%', 'I'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return std::to_string(event.time.hour % 12);
+        }
+    };
+
+    // 分钟
+    template <>
+    struct Formatter<'%', 'M'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return std::to_string(event.time.minute);
+        }
+    };
+
+    // 秒
+    template <>
+    struct Formatter<'%', 'S'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return std::to_string(event.time.sec);
+        }
+    };
+
+    // 毫秒
+    template <>
+    struct Formatter<'%', 'e'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            // 是否有可能subSec就是毫秒
+            return std::to_string(event.time.subSec / 1000);
+        }
+    };
+
+    // 微秒
+    template <>
+    struct Formatter<'%', 'f'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return std::to_string(event.time.subSec);
+        }
+    };
+
+    // 时区
+    template <>
+    struct Formatter<'%', 'z'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return {};
+        }
+    };
+
+    // 时区名
+    template <>
+    struct Formatter<'%', 'Z'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return {};
+        }
+    };
+
+    // 日志等级
+    template <>
+    struct Formatter<'%', 'l'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return lvl2str(event.lvl);
+        }
+    };
+
+    // 线程号
+    template <>
+    struct Formatter<'%', 't'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return {};
+        }
+    };
+
+    // 进程号
+    template <>
+    struct Formatter<'%', 'p'> : public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return {};
+        }
+    };
+
+    // 日志内容
+    template <>
+    struct Formatter<'%', 'v'>: public FormatterBase {
+        std::string content(const LogEvent &event) override {
+            return event.msg;
+        }
+    };
+}
+
+
+
+===== FILE: F:\stslog\include\stslog\LogEvent.hpp =====
+----------------------------------------
+#pragma once
+#include <string>
+#include "stslog/LogLevel.hpp"
+
+namespace stslog {
+
+    struct LogEvent {
+        LogLevel lvl;
+        std::string msg;
+
+        int threadID;
+        int processID;
+
+        struct {
+            int year;
+            unsigned month;
+            unsigned day;
+            unsigned hour;
+            unsigned minute;
+            unsigned sec;
+            unsigned long long subSec;
+        } time;
+        struct {
+            std::string file;
+            std::string func;
+            int line;
+        } pos;
+
+        std::string content;
+    };
+
+}
+
+
+
+===== FILE: F:\stslog\include\stslog\LogLevel.hpp =====
+----------------------------------------
+#pragma once
+#include <cstdint>
+#include <string>
+
+namespace stslog {
+
+    enum class LogLevel : std::uint8_t {
+        TRACE,
+        DEBUG,
+        INFO,
+        WARN,
+        ERROR,
+        CRITICAL,
+        OFF
+    };
+
+    inline std::string lvl2str(LogLevel lvl) {
+        switch (lvl) {
+        case LogLevel::TRACE:
+            return "TRACE";
+        case LogLevel::DEBUG:
+            return "DEBUG";
+        case LogLevel::INFO:
+            return "INFO";
+        case LogLevel::WARN:
+            return "WARN";
+        case LogLevel::ERROR:
+            return "ERROR";
+        case LogLevel::CRITICAL:
+            return "CRITICAL";
+        case LogLevel::OFF:
+            return "OFF";
+        }
+        return "UNKNOWN";
+    }
+
+}
+
+
+
+===== FILE: F:\stslog\include\stslog\LogPipeLine.hpp =====
+----------------------------------------
+#pragma once
+#include <memory>
+#include "stslog/Sink.hpp"
+#include "stslog/FormatCombiner.hpp"
+
+namespace stslog {
+
+    class LogPipeLine {
+    public:
+        LogPipeLine(std::shared_ptr<Sinks::Sink> _sink)
+         : sink(_sink), formatter(std::make_shared<FormatCombiner>()) {}
+
+        void log(LogEvent &event) {
+            if (!shouldLog(event.lvl))
+                return;
+            event.content = formatter->content(event);
+            sink->write(event);
+        }
+
+        void set_level(LogLevel _lvl) { lvl = _lvl; }
+
+        void set_pattern(std::string pattern) {
+            this->formatter->set_pattern(std::move(pattern));
+        }
+
+    private:
+        bool shouldLog(LogLevel _lvl) { return this->lvl <= _lvl; }
+
+    private:
+        std::string name;
+        std::shared_ptr<FormatCombiner> formatter;
+        std::shared_ptr<Sinks::Sink> sink;
+        LogLevel lvl = LogLevel::TRACE;
+    };
+
+}
+
+
+
+===== FILE: F:\stslog\include\stslog\LogRegistry.hpp =====
+----------------------------------------
+#include <string>
+#include <unordered_map>
+#include <memory>
+#include "stslog/Logger.hpp"
+#include "stslog/sinks/ColoredStdoutSink.hpp"
+
+namespace stslog {
+
+    class LogRegistry {
+    public:
+        static LogRegistry& instance() {
+            static LogRegistry inst;
+            inst.enroll_logger(make_logger("default", "default sink", make_sink<Sinks::ColoredStdoutSink>()));
+            return inst;
+        }
+
+        bool enroll_logger(std::shared_ptr<Logger> logger) {
+            if (logger->name.empty() || loggerMap.count(logger->name))
+                return false;
+            loggerMap[logger->name] = logger;
+            return true;
+        }
+
+        std::shared_ptr<Logger> get_logger(std::string name) {
+            std::shared_ptr<Logger> rst = nullptr;
+            if (!name.empty() && loggerMap.count(name))
+                rst = loggerMap[name];
+            return rst;
+        }
+
+        void erase_logger(std::string name) {
+            if (!loggerMap.count(name))
+                return;
+            loggerMap.erase(name);
+        }
+
+    private:
+        std::unordered_map<std::string, std::shared_ptr<Logger>> loggerMap;
+
+    private:
+        LogRegistry() = default;
+        ~LogRegistry() = default;
+        LogRegistry(const LogRegistry&) = delete;
+        LogRegistry& operator=(const LogRegistry&) = delete;
+    };
+
+}
+
+
+
+===== FILE: F:\stslog\include\stslog\Logger.hpp =====
+----------------------------------------
+#pragma once
+#include <memory>
+#include <chrono>
+#include <unordered_map>
+#include <format>
+#include <vector>
+#include <utility>
+#include "stslog/LogLevel.hpp"
+#include "stslog/LogPipeLine.hpp"
+
+namespace stslog {
+
+    class Logger {
+        friend class LogRegistry;
+    public:
+        Logger(std::string loggerName, std::string sinkName, std::shared_ptr<Sinks::Sink> sink) : name(std::move(loggerName)) {
+            this->add_sink(sinkName, sink);
+        }
+
+        Logger(std::string name, std::pair<std::string, std::shared_ptr<Sinks::Sink>> sink) : name(std::move(name)) {
+            this->add_sink(sink.first, sink.second);
+        }
+
+        Logger(std::string _name, std::vector<std::pair<std::string, std::shared_ptr<Sinks::Sink>>> sinkVec = {}) : name(std::move(_name)) {
+            for (auto [name, sink]: sinkVec)
+                add_sink(name, sink);
+        }
+
+        bool add_sink(std::string name, std::shared_ptr<Sinks::Sink> sink) {
+            if (name.empty() || this->pipelines.count(name))
+                return false;
+            pipelines[name] = std::make_shared<LogPipeLine>(sink);
+            return true;
+        }
+
+        void erase_sink(std::string name) { pipelines.erase(name); }
+        void set_level(LogLevel _lvl) { this->lvl = _lvl; }
+        void set_sink_level(std::string name, LogLevel lvl) {
+            if (name.empty() || !pipelines.count(name))
+                return;
+            pipelines[name]->set_level(lvl);
+        }
+
+        void set_pattern(std::string pattern) {
+            for (auto it: pipelines)
+                it.second->set_pattern(pattern);
+        }
+
+        void set_pattern(std::string name, std::string pattern) {
+            if (name.empty() || !pipelines.count(name))
+                return;
+            pipelines[name]->set_pattern(std::move(pattern));
+        }
+
+        template <typename... Args>
+        void trace(std::format_string<Args...> fmt, Args&&... msgs) { log(LogLevel::TRACE, fmt, std::forward<Args>(msgs)...); }
+        void trace(const std::string& msg) { log(LogLevel::TRACE, "{}", msg); }
+
+        template <typename... Args>
+        void debug(std::format_string<Args...> fmt, Args&&... msgs) { log(LogLevel::DEBUG, fmt, std::forward<Args>(msgs)...); }
+        void debug(const std::string& msg) { log(LogLevel::DEBUG, "{}", msg); }
+
+        template <typename... Args>
+        void info(std::format_string<Args...> fmt, Args&&... msgs) { log(LogLevel::INFO, fmt, std::forward<Args>(msgs)...); }
+        void info(const std::string& msg) { log(LogLevel::INFO, "{}", msg); }
+
+        template <typename... Args>
+        void warn(std::format_string<Args...> fmt, Args&&... msgs) { log(LogLevel::WARN, fmt, std::forward<Args>(msgs)...); }
+        void warn(const std::string& msg) { log(LogLevel::WARN, "{}", msg); }
+
+        template <typename... Args>
+        void error(std::format_string<Args...> fmt, Args&&... msgs) { log(LogLevel::ERROR, fmt, std::forward<Args>(msgs)...); }
+        void error(const std::string& msg) { log(LogLevel::ERROR, "{}", msg); }
+
+        template <typename... Args>
+        void critical(std::format_string<Args...> fmt, Args&&... msgs) { log(LogLevel::CRITICAL, fmt, std::forward<Args>(msgs)...); }
+        void critical(const std::string& msg) { log(LogLevel::CRITICAL, "{}", msg); }
+
+    private:
+        bool shouldLog(LogLevel _lvl) {
+            return this->lvl <= _lvl && !this->pipelines.empty();
+        }
+
+        LogEvent generate_event(LogLevel lvl, std::string msg, std::string file = "?", std::string func = "?", int line = -1) {
+            using namespace std::chrono;
+            auto now = floor<microseconds>(system_clock::now());
+            auto dp = floor<days>(now);
+
+            year_month_day ymd(dp);
+            hh_mm_ss hms(now - dp);
+
+            LogEvent event{
+                .lvl = lvl,
+                .msg = msg,
+                .time = {
+                    .year = static_cast<int>(ymd.year()),
+                    .month = static_cast<unsigned>(ymd.month()),
+                    .day = static_cast<unsigned>(ymd.day()),
+                    .hour = static_cast<unsigned>(hms.hours().count()),
+                    .minute = static_cast<unsigned>(hms.minutes().count()),
+                    .sec = static_cast<unsigned>(hms.seconds().count()),
+                    .subSec = static_cast<unsigned>(hms.subseconds().count())
+                },
+                .pos = {
+                    .file = std::move(file),
+                    .func = std::move(func),
+                    .line = line
+                }
+            };
+
+            return event;
+        }
+
+        template <typename... Args>
+        void log(LogLevel _lvl, std::format_string<Args...> fmt, Args&&... msgs) {
+            if (!shouldLog(_lvl))
+                return;
+
+            auto event = generate_event(_lvl, std::format(fmt, std::forward<Args>(msgs)...));
+
+            for (const auto& [name, p]: pipelines)
+                p->log(event);
+        }
+
+        template <typename... Args>
+        void log(LogLevel _lvl, std::string file, std::string func, int line, std::format_string<Args...> fmt, Args&&... msgs) {
+            if (!shouldLog(_lvl))
+                return;
+
+            auto event = generate_event(_lvl, std::format(fmt, std::forward<Args>(msgs)...), std::move(file), std::move(func), line);
+
+            for (const auto& [name, p]: pipelines)
+                p->log(event);
+        }
+
+    private:
+        const std::string name;
+        LogLevel lvl = LogLevel::INFO;
+        std::unordered_map<std::string, std::shared_ptr<stslog::LogPipeLine>> pipelines;
+    };
+
+    inline std::shared_ptr<Logger> make_logger(std::string loggerName, std::string sinkName, std::shared_ptr<Sinks::Sink> sink) {
+        return std::make_shared<Logger>(loggerName, sinkName, sink);
+    }
+
+    inline std::shared_ptr<Logger> make_logger(std::string name, std::pair<std::string, std::shared_ptr<Sinks::Sink>> sink) {
+        return std::make_shared<Logger>(name, sink);
+    }
+
+    inline std::shared_ptr<Logger> make_logger(std::string name, std::vector<std::pair<std::string, std::shared_ptr<Sinks::Sink>>> sinkVec = {}) {
+        return std::make_shared<Logger>(name, sinkVec);
+    }
+
+}
+
+
+
+===== FILE: F:\stslog\include\stslog\Sink.hpp =====
+----------------------------------------
+#pragma once
+#include <memory>
+#include "stslog/LogEvent.hpp"
+
+namespace stslog {
+    namespace Sinks {
+        class Sink {
+        public:
+            virtual void write(const LogEvent &event) = 0;
+            virtual ~Sink() = default;
+        };
+    }
+
+    template <typename SinkType, typename... Args>
+    std::shared_ptr<Sinks::Sink> make_sink(Args&&... args) {
+        return std::make_shared<SinkType>(std::forward<Args>(args)...);
+    }
+}
+
+
+
+===== FILE: F:\stslog\include\stslog\sinks.hpp =====
+----------------------------------------
+#include "stslog/sinks/StdoutSink.hpp"
+#include "stslog/sinks/FileSink.hpp"
+#include "stslog/sinks/ColoredStdoutSink.hpp"
+
+
+
+===== FILE: F:\stslog\include\stslog\sinks\ColoredStdoutSink.hpp =====
+----------------------------------------
+#pragma once
+#include "stslog/Sink.hpp"
+#include <iostream>
+
+namespace stslog::Sinks {
+
+    class ColoredStdoutSink : public Sink {
+    public:
+        void write(const LogEvent &event) override {
+            std::string color;
+            switch (event.lvl) {
+            case LogLevel::TRACE:
+                color = "\033[37m"; break;
+            case LogLevel::DEBUG:
+                color = "\033[36m"; break;
+            case LogLevel::INFO:
+                color = "\033[32m"; break;
+            case LogLevel::WARN:
+                color = "\033[33m"; break;
+            case LogLevel::ERROR:
+                color = "\033[31m"; break;
+            case LogLevel::CRITICAL:
+                color = "\033[1;41m"; break;
+            default:
+                color = "";
+            }
+            std::cout << color << event.content << "\033[0m\n";
+        }
+    };
+
+}
+
+
+
+===== FILE: F:\stslog\include\stslog\sinks\FileSink.hpp =====
+----------------------------------------
+#pragma once
+#include "stslog/Sink.hpp"
+#include <fstream>
+
+namespace stslog::Sinks {
+
+    class FileSink : public Sink {
+    public:
+        FileSink(std::string _file) : Sink(), file(std::move(_file)), fout(file, std::ios::app) { }
+        void write(const LogEvent &event) override {
+            // TODO: 异常捕获 缓冲区 线程安全
+            fout << event.content;
+            if (event.lvl != LogLevel::CRITICAL)
+                fout << '\n';
+            else
+                fout << std::endl;
+        }
+
+    private:
+        std::string file;
+        std::ofstream fout;
+    };
+
+}
+
+
+
+===== FILE: F:\stslog\include\stslog\sinks\StdoutSink.hpp =====
+----------------------------------------
+#pragma once
+#include "stslog/Sink.hpp"
+#include <iostream>
+
+namespace stslog::Sinks {
+
+    class StdoutSink : public Sink {
+    public:
+        void write(const LogEvent &event) override {
+            std::cout << event.content << '\n';
+        }
+    };
+
+}
+
+
+
+===== FILE: F:\stslog\include\stslog\stslog.hpp =====
+----------------------------------------
+#include "stslog/Logger.hpp"
+#include "stslog/LogRegistry.hpp"
+
+
+
+===== FILE: F:\stslog\tests\TestSink.hpp =====
+----------------------------------------
+#pragma once
+#include "stslog//Sink.hpp"
+
+namespace stslog::Sinks {
+    struct TestSink : public Sink {
+        void write(const LogEvent &event) override {
+            this->event = event;
+        }
+        LogEvent event;
+    };
+}
+
+
+
+===== FILE: F:\stslog\tests\test_formatter.cpp =====
+----------------------------------------
+#include <catch2/catch_all.hpp>
+#include "stslog/stslog.hpp"
+
+TEST_CASE("formatter test", "[formatter]") {
+    stslog::FormatCombiner formatter;
+    stslog::LogEvent event {
+        .lvl = stslog::LogLevel::INFO,
+        .msg = "test msg",
+        .threadID = 2342,
+        .processID = 2372,
+        .time = {
+            .year = 2025,
+            .month = 11,
+            .day = 15,
+            .hour = 17,
+            .minute = 38,
+            .sec = 32,
+            .subSec = 321
+        },
+        .pos = {
+            .file = "testFile.cpp",
+            .func = "testFunc",
+            .line = 213
+        }
+    };
+
+    SECTION("basic format") {
+        std::string content = formatter.content(event);
+        REQUIRE(content == "[17:38:32] [INFO] test msg");
+    }
+
+    SECTION("reset format") {
+        formatter.set_pattern("+");
+        std::string content = formatter.content(event);
+        REQUIRE(content == "[17:38:32] [INFO] test msg");
+    }
+
+    SECTION("time") {
+        formatter.set_pattern("[%Y-%m-%d %H:%M:%S:%f] [%l] %v");
+        std::string content = formatter.content(event);
+        REQUIRE(content == "[2025-11-15 17:38:32:321] [INFO] test msg");
+    }
+
+    SECTION("pos") {
+        formatter.set_pattern("[%f] %f:%L [%l] %v");
+        std::string content = formatter.content(event);
+        REQUIRE(content == "[testFile.cpp] testFunc:213 [INFO] test msg");
+    }
+}
+
+
+
+===== FILE: F:\stslog\tests\test_logger.cpp =====
+----------------------------------------
+#include <catch2/catch_all.hpp>
+#include "stslog/stslog.hpp"
+#include "TestSink.hpp"
+
+TEST_CASE("test Logger::should_log()", "[Logger]") {
+    stslog::Logger logger("logger");
+    logger.set_pattern("%v");
+
+    REQUIRE_NOTHROW(logger.trace("test"));
+
+    auto sink = std::make_shared<stslog::Sinks::TestSink>();
+    logger.set_level(stslog::LogLevel::WARN);
+    logger.add_sink("testSink", sink);
+    logger.trace("test");
+    logger.debug("test");
+    logger.info("test");
+    REQUIRE(sink->event.msg.empty());
+
+    logger.warn("test1");
+    REQUIRE(sink->event.msg == "test1");
+
+    logger.set_level(stslog::LogLevel::OFF);
+    logger.critical("test2");
+    REQUIRE(sink->event.msg == "test1");
+}
+
+TEST_CASE("test add and erase sink", "[Logger]") {
+    stslog::Logger logger("logger");
+    auto sink = std::make_shared<stslog::Sinks::TestSink>();
+
+    logger.add_sink("sink", sink);
+    logger.erase_sink("sink");
+    logger.critical("test");
+    REQUIRE(sink->event.content.empty());
+}
+
+TEST_CASE("test msg format", "[Logger]") {
+    stslog::Logger logger("logger");
+    auto sink = std::make_shared<stslog::Sinks::TestSink>();
+    logger.add_sink("sink", sink);
+
+    logger.info("{}+{}={}", 2, 3, 5);
+    REQUIRE(sink->event.msg == "2+3=5");
+}
+
+TEST_CASE("test Logger::set_pattern()", "[Logger]") {
+    stslog::Logger logger("logger");
+
+    auto sink1 = std::make_shared<stslog::Sinks::TestSink>();
+    auto sink2 = std::make_shared<stslog::Sinks::TestSink>();
+
+    logger.add_sink("sink1", sink1);
+    logger.add_sink("sink2", sink2);
+
+    logger.set_pattern("%v");
+    logger.critical("test1");
+    REQUIRE(sink1->event.content == "test1");
+    REQUIRE(sink2->event.content == "test1");
+
+    logger.set_pattern("sink1", "%l");
+    logger.warn("test2");
+    REQUIRE(sink1->event.content == "WARN");
+    REQUIRE(sink2->event.content == "test2");
+}
+
+
+
+===== FILE: F:\stslog\tests\test_registry.cpp =====
+----------------------------------------
+#include <catch2/catch_all.hpp>
+#include "stslog/stslog.hpp"
+#include "TestSink.hpp"
+
+TEST_CASE("test registry basic use", "[Registry]") {
+    auto sink = std::make_shared<stslog::Sinks::TestSink>(); {
+        auto logger = stslog::make_logger("logger for testing registry", {
+            {"test sink", sink}
+        });
+        stslog::LogRegistry::instance().enroll_logger(logger);
+    } {
+        auto logger = stslog::LogRegistry::instance().get_logger("logger for testing registry");
+        logger->set_level(stslog::LogLevel::TRACE);
+        logger->debug("test");
+        REQUIRE(sink->event.msg == "test");
+    }
+}
+
+TEST_CASE("test registry erase", "[Registry]") {
+    auto logger = stslog::make_logger("logger for testing registry erase");
+    stslog::LogRegistry::instance().enroll_logger(logger);
+    stslog::LogRegistry::instance().erase_logger("logger for testing registry erase");
+
+    auto empty_logger = stslog::LogRegistry::instance().get_logger("logger for testing registry erase");
+    REQUIRE(empty_logger == nullptr);
+}
+
+
