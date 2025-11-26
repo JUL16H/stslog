@@ -4,7 +4,7 @@
 
 namespace stslog {
     template <typename... Args>
-    inline void trace(std::format_string<Args...> fmt, Args&&... msgs) {
+    void trace(std::format_string<Args...> fmt, Args&&... msgs) {
         LogRegistry::instance().get_logger("default")->trace(fmt, std::forward<Args>(msgs)...);
     }
     inline void trace(const std::string& msg) {
@@ -12,7 +12,7 @@ namespace stslog {
     }
 
     template <typename... Args>
-    inline void debug(std::format_string<Args...> fmt, Args&&... msgs) {
+    void debug(std::format_string<Args...> fmt, Args&&... msgs) {
         LogRegistry::instance().get_logger("default")->debug(fmt, std::forward<Args>(msgs)...);
     }
     inline void debug(const std::string& msg) {
