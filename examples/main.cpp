@@ -45,6 +45,7 @@ void use_registry()
 
 int main()
 {
+    stslog::trace("hello world");
     basic_use(); bar();
     use_registry(); bar();
     return 0;

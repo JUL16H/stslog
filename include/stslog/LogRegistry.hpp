@@ -6,7 +6,6 @@
 #include "stslog/sinks/ColoredStdoutSink.hpp"
 
 namespace stslog {
-
     class LogRegistry {
     public:
         static LogRegistry& instance() {
@@ -24,7 +23,7 @@ namespace stslog {
 
         std::shared_ptr<Logger> get_logger(std::string name) {
             std::shared_ptr<Logger> rst = nullptr;
-            if (!name.empty() && loggerMap.count(name) && name != "default")
+            if (!name.empty() && loggerMap.count(name))
                 rst = loggerMap[name];
             return rst;
         }
@@ -45,5 +44,4 @@ namespace stslog {
         LogRegistry(const LogRegistry&) = delete;
         LogRegistry& operator=(const LogRegistry&) = delete;
     };
-
 }
