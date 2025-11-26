@@ -1,20 +1,16 @@
 #pragma once
-
 #include "stslog/Sink.hpp"
 #include <iostream>
 
-namespace stslog::Sinks
-{
-    class ColoredStdoutSink : public Sink
-    {
+namespace stslog::Sinks {
+
+    class ColoredStdoutSink : public Sink {
     public:
-        void write(const LogEvent &event) override
-        {
+        void write(const LogEvent &event) override {
             std::string color;
-            switch (event.lvl)
-            {
+            switch (event.lvl) {
             case LogLevel::TRACE:
-                color = "\033[37m"; break;
+                color = "\033[90m"; break;
             case LogLevel::DEBUG:
                 color = "\033[36m"; break;
             case LogLevel::INFO:
@@ -31,4 +27,5 @@ namespace stslog::Sinks
             std::cout << color << event.content << "\033[0m\n";
         }
     };
+
 }

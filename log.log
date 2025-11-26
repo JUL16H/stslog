@@ -1,0 +1,7 @@
+测试2025-11-23 11:28:33:936] [TRACE] hello stslog
+测试2025-11-23 11:28:33:936] [DEBUG] hello stslog
+测试2025-11-23 11:28:33:936] [INFO] hello stslog
+测试2025-11-23 11:28:33:936] [WARN] hello stslog
+测试2025-11-23 11:28:33:937] [ERROR] hello stslog
+测试2025-11-23 11:28:33:937] [CRITICAL] hello stslog
+[11:28:33] [INFO] 2 + 3 = 5

@@ -2,8 +2,7 @@
 #include "stslog/stslog.hpp"
 #include "TestSink.hpp"
 
-TEST_CASE("test Logger::should_log()", "[Logger]")
-{
+TEST_CASE("test Logger::should_log()", "[Logger]") {
     stslog::Logger logger("logger");
     logger.set_pattern("%v");
 
@@ -25,8 +24,7 @@ TEST_CASE("test Logger::should_log()", "[Logger]")
     REQUIRE(sink->event.msg == "test1");
 }
 
-TEST_CASE("test add and erase sink", "[Logger]")
-{
+TEST_CASE("test add and erase sink", "[Logger]") {
     stslog::Logger logger("logger");
     auto sink = std::make_shared<stslog::Sinks::TestSink>();
 
@@ -36,8 +34,7 @@ TEST_CASE("test add and erase sink", "[Logger]")
     REQUIRE(sink->event.content.empty());
 }
 
-TEST_CASE("test msg format", "[Logger]")
-{
+TEST_CASE("test msg format", "[Logger]") {
     stslog::Logger logger("logger");
     auto sink = std::make_shared<stslog::Sinks::TestSink>();
     logger.add_sink("sink", sink);
@@ -46,8 +43,7 @@ TEST_CASE("test msg format", "[Logger]")
     REQUIRE(sink->event.msg == "2+3=5");
 }
 
-TEST_CASE("test Logger::set_pattern()", "[Logger]")
-{
+TEST_CASE("test Logger::set_pattern()", "[Logger]") {
     stslog::Logger logger("logger");
 
     auto sink1 = std::make_shared<stslog::Sinks::TestSink>();

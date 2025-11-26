@@ -6,23 +6,33 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 add_library(stslog INTERFACE)
+add_library(stslog::stslog ALIAS stslog)
+
 target_include_directories(stslog
     INTERFACE
-        ${CMAKE_SOURCE_DIR}/include
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
 )
 
-add_executable(stslog_example ${CMAKE_SOURCE_DIR}/examples/main.cpp)
-target_link_libraries(stslog_example
-    PRIVATE
-        stslog
-)
-set_target_properties(stslog_example PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/examples/
-)
+option(STSLOG_BUILD_EXAMPLES "Build stslog examples" ON)
+option(STSLOG_BUILD_TESTS "Build stslog tests" ON)
 
-add_subdirectory(external/Catch2)
-enable_testing()
-add_subdirectory(tests)
+if (STSLOG_BUILD_EXAMPLES)
+    add_executable(stslog_example ${CMAKE_SOURCE_DIR}/examples/main.cpp)
+    target_link_libraries(stslog_example
+        PRIVATE
+            stslog
+    )
+    set_target_properties(stslog_example PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/examples/
+    )
+endif()
+
+if (STSLOG_BUILD_TESTS)
+    add_subdirectory(external/Catch2)
+    include(CTest)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

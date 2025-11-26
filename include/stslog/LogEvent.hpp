@@ -2,18 +2,16 @@
 #include <string>
 #include "stslog/LogLevel.hpp"
 
-namespace stslog
-{
-    struct LogEvent
-    {
+namespace stslog {
+
+    struct LogEvent {
         LogLevel lvl;
         std::string msg;
 
         int threadID;
         int processID;
 
-        struct
-        {
+        struct {
             int year;
             unsigned month;
             unsigned day;
@@ -22,8 +20,7 @@ namespace stslog
             unsigned sec;
             unsigned long long subSec;
         } time;
-        struct
-        {
+        struct {
             std::string file;
             std::string func;
             int line;
@@ -31,4 +28,5 @@ namespace stslog
 
         std::string content;
     };
+
 }

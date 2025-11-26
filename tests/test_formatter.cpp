@@ -1,8 +1,7 @@
 #include <catch2/catch_all.hpp>
 #include "stslog/stslog.hpp"
 
-TEST_CASE("formatter test", "[formatter]")
-{
+TEST_CASE("formatter test", "[formatter]") {
     stslog::FormatCombiner formatter;
     stslog::LogEvent event {
         .lvl = stslog::LogLevel::INFO,
@@ -25,28 +24,24 @@ TEST_CASE("formatter test", "[formatter]")
         }
     };
 
-    SECTION("basic format")
-    {
+    SECTION("basic format") {
         std::string content = formatter.content(event);
         REQUIRE(content == "[17:38:32] [INFO] test msg");
     }
 
-    SECTION("reset format")
-    {
+    SECTION("reset format") {
         formatter.set_pattern("+");
         std::string content = formatter.content(event);
         REQUIRE(content == "[17:38:32] [INFO] test msg");
     }
 
-    SECTION("time")
-    {
+    SECTION("time") {
         formatter.set_pattern("[%Y-%m-%d %H:%M:%S:%f] [%l] %v");
         std::string content = formatter.content(event);
         REQUIRE(content == "[2025-11-15 17:38:32:321] [INFO] test msg");
     }
 
-    SECTION("pos")
-    {
+    SECTION("pos") {
         formatter.set_pattern("[%f] %f:%L [%l] %v");
         std::string content = formatter.content(event);
         REQUIRE(content == "[testFile.cpp] testFunc:213 [INFO] test msg");

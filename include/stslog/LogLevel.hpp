@@ -2,10 +2,9 @@
 #include <cstdint>
 #include <string>
 
-namespace stslog
-{
-    enum class LogLevel : std::uint8_t
-    {
+namespace stslog {
+
+    enum class LogLevel : std::uint8_t {
         TRACE,
         DEBUG,
         INFO,
@@ -15,10 +14,8 @@ namespace stslog
         OFF
     };
 
-    inline std::string lvl2str(LogLevel lvl)
-    {
-        switch (lvl)
-        {
+    inline std::string lvl2str(LogLevel lvl) {
+        switch (lvl) {
         case LogLevel::TRACE:
             return "TRACE";
         case LogLevel::DEBUG:
@@ -36,4 +33,5 @@ namespace stslog
         }
         return "UNKNOWN";
     }
+
 }
